@@ -20,12 +20,12 @@ public class Knife4jConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("淘泡泡后端API文档")
+                        .title("淘票票后端API文档")
                         .version("1.0.0")
-                        .description("淘泡泡后端系统接口文档")
+                        .description("淘票票后端系统接口文档")
                         .contact(new Contact()
                                 .name("duanyan")
-                                .email("duanyan@example.com"))
+                                .email("2907762730@qq.com"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")));
