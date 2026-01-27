@@ -7,14 +7,14 @@
 
     <parent>
         <groupId>com.duanyan</groupId>
-        <artifactId>taopiaopaio-backend</artifactId>
+        <artifactId>taopiaopiao-backend</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>taopiaopiao-application</artifactId>
     <packaging>jar</packaging>
 
-    <name>taopiaopaio-application</name>
+    <name>taopiaopiao-application</name>
     <description>Application module - business orchestration and use cases</description>
 
     <dependencies>

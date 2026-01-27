@@ -11,6 +11,7 @@
     <file url="file://$PROJECT_DIR$/taopiaopiao-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-application/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-domain/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-infrastructure/src/main/java" charset="UTF-8" />
   </component>

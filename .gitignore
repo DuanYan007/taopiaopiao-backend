@@ -4,7 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -34,4 +34,4 @@ build/
 ### Mac OS ###
 .DS_Store
 
-.mvn
+.mvn/

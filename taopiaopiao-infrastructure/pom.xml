@@ -7,14 +7,14 @@
 
     <parent>
         <groupId>com.duanyan</groupId>
-        <artifactId>taopiaopaio-backend</artifactId>
+        <artifactId>taopiaopiao-backend</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>taopiaopiao-infrastructure</artifactId>
     <packaging>jar</packaging>
 
-    <name>taopiaopaio-infrastructure</name>
+    <name>taopiaopiao-infrastructure</name>
     <description>Infrastructure module - data persistence and external services</description>
 
     <dependencies>

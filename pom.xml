@@ -13,12 +13,12 @@
     </parent>
 
     <groupId>com.duanyan</groupId>
-    <artifactId>taopiaopaio-backend</artifactId>
+    <artifactId>taopiaopiao-backend</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>TaoPiaoPao Backend</name>
-    <description>TaoPiaoPao Backend Project with DDD Architecture</description>
+    <name>TaoPiaoPiao Backend</name>
+    <description>TaoPiaoPiao Backend Project with DDD Architecture</description>
 
     <modules>
         <module>taopiaopiao-api</module>
