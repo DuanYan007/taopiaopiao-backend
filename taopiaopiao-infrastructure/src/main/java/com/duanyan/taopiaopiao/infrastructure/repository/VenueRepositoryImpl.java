@@ -1,5 +1,8 @@
 package com.duanyan.taopiaopiao.infrastructure.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.domain.entity.Venue;
 import com.duanyan.taopiaopiao.domain.repository.VenueRepository;
 import com.duanyan.taopiaopiao.infrastructure.mapper.VenueMapper;
@@ -25,7 +28,11 @@ public class VenueRepositoryImpl implements VenueRepository {
 
     @Override
     public Venue save(Venue venue) {
-        venueMapper.insert(venue);
+        if (venue.getId() == null) {
+            venueMapper.insert(venue);
+        } else {
+            venueMapper.updateById(venue);
+        }
         return venue;
     }
 
@@ -37,5 +44,15 @@ public class VenueRepositoryImpl implements VenueRepository {
     @Override
     public boolean deleteById(Long id) {
         return venueMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public IPage<Venue> page(Page<Venue> page, LambdaQueryWrapper<Venue> queryWrapper) {
+        return venueMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public Venue findOne(LambdaQueryWrapper<Venue> queryWrapper) {
+        return venueMapper.selectOne(queryWrapper);
     }
 }

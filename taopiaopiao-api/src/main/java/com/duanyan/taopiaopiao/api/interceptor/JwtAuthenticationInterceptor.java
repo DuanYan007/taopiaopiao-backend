@@ -42,15 +42,25 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
 
         // 获取Authorization头
         String authorization = request.getHeader(jwtConfig.getHeaderName());
+        log.info("收到请求 - URI: {}, Authorization头: {}", requestURI, authorization);
 
         // 检查Token是否存在
-        if (authorization == null || !authorization.startsWith(jwtConfig.getTokenPrefix())) {
+        if (authorization == null || authorization.trim().isEmpty()) {
+            log.warn("认证失败 - Authorization为空");
             sendErrorResponse(response, 401, "未提供认证令牌");
             return false;
         }
 
-        // 提取Token
-        String token = authorization.replace(jwtConfig.getTokenPrefix(), "");
+        // 提取Token（支持带或不带Bearer前缀）
+        String token;
+        if (authorization.startsWith(jwtConfig.getTokenPrefix())) {
+            // 包含 Bearer 前缀，去除前缀
+            token = authorization.substring(jwtConfig.getTokenPrefix().length());
+        } else {
+            // 不包含前缀，直接使用
+            token = authorization;
+            log.debug("Token不包含Bearer前缀，直接使用");
+        }
 
         // 验证Token
         if (!jwtUtil.validateToken(token)) {
