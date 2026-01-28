@@ -1,5 +1,6 @@
 package com.duanyan.taopiaopiao.api;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @since 1.0.0
  */
 @SpringBootApplication(scanBasePackages = "com.duanyan.taopiaopiao")
+@MapperScan("com.duanyan.taopiaopiao.infrastructure.mapper")
 public class TaoPiaoPiaoApplication {
 
     public static void main(String[] args) {

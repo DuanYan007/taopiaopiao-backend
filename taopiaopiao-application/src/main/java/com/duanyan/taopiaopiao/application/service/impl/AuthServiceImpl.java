@@ -36,9 +36,13 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 2. 验证密码
-        if (!passwordEncoder.matches(request.getPassword(), adminUser.getPassword())) {
+//        if (!passwordEncoder.matches(request.getPassword(), adminUser.getPassword())) {
+//            throw new BusinessException(1001, "用户名或密码错误");
+//        }
+        if (!request.getPassword().equals(adminUser.getPassword())) {
             throw new BusinessException(1001, "用户名或密码错误");
         }
+
 
         // 3. 检查用户状态
         if (!"active".equals(adminUser.getStatus())) {
