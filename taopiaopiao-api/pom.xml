@@ -18,6 +18,12 @@
     <description>API module - REST controllers and DTOs</description>
 
     <dependencies>
+        <!-- 依赖domain模块 (DTO) -->
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-domain</artifactId>
+        </dependency>
+
         <!-- 依赖application模块 -->
         <dependency>
             <groupId>com.duanyan</groupId>
