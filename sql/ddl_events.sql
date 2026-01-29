@@ -10,7 +10,7 @@ CREATE TABLE events (
   description TEXT COMMENT '演出简介',
   cover_image VARCHAR(500) COMMENT '封面图片URL',
   images JSON COMMENT '图片数组',
-  status ENUM('draft','on_sale','off_sale','sold_out') NOT NULL DEFAULT 'draft' COMMENT '状态',
+  status ENUM('draft','on_sale','off_sale','sold_out', 'coming_soon') NOT NULL DEFAULT 'draft' COMMENT '状态',
   sale_start_time DATETIME COMMENT '开售时间',
   sale_end_time DATETIME COMMENT '停售时间',
   tags JSON COMMENT '标签数组',

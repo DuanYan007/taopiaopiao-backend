@@ -1,5 +1,8 @@
 package com.duanyan.taopiaopiao.infrastructure.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.domain.entity.Event;
 import com.duanyan.taopiaopiao.domain.repository.EventRepository;
 import com.duanyan.taopiaopiao.infrastructure.mapper.EventMapper;
@@ -25,7 +28,11 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     public Event save(Event event) {
-        eventMapper.insert(event);
+        if (event.getId() == null) {
+            eventMapper.insert(event);
+        } else {
+            eventMapper.updateById(event);
+        }
         return event;
     }
 
@@ -37,5 +44,15 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public boolean deleteById(Long id) {
         return eventMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public IPage<Event> page(Page<Event> page, LambdaQueryWrapper<Event> queryWrapper) {
+        return eventMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public Event findOne(LambdaQueryWrapper<Event> queryWrapper) {
+        return eventMapper.selectOne(queryWrapper);
     }
 }

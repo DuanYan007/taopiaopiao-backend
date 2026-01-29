@@ -1,5 +1,8 @@
 package com.duanyan.taopiaopiao.domain.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.domain.entity.Event;
 
 /**
@@ -29,4 +32,14 @@ public interface EventRepository {
      * 删除
      */
     boolean deleteById(Long id);
+
+    /**
+     * 分页查询
+     */
+    IPage<Event> page(Page<Event> page, LambdaQueryWrapper<Event> queryWrapper);
+
+    /**
+     * 根据条件查询单个
+     */
+    Event findOne(LambdaQueryWrapper<Event> queryWrapper);
 }

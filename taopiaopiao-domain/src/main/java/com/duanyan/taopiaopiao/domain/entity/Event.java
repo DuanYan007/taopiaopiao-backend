@@ -73,7 +73,7 @@ public class Event {
     private String images;
 
     /**
-     * 状态: draft, on_sale, off_sale, sold_out
+     * 状态: draft, on_sale, off_sale, sold_out, coming_soon
      */
     private String status;
 
