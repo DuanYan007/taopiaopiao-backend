@@ -92,9 +92,9 @@ public class VenueServiceImpl implements VenueService {
             throw new BusinessException(400, "场馆名称已存在");
         }
 
-        // 转换为实体
+        // 转换为实体（排除需要特殊处理的字段）
         Venue venue = new Venue();
-        BeanUtils.copyProperties(request, venue);
+        BeanUtils.copyProperties(request, venue, "facilities", "images");
 
         // 处理设施数组（转为JSON字符串）
         if (request.getFacilities() != null && !request.getFacilities().isEmpty()) {
@@ -138,8 +138,8 @@ public class VenueServiceImpl implements VenueService {
             throw new BusinessException(400, "场馆名称已存在");
         }
 
-        // 更新字段
-        BeanUtils.copyProperties(request, existingVenue);
+        // 更新字段（排除需要特殊处理的字段）
+        BeanUtils.copyProperties(request, existingVenue, "facilities", "images");
 
         // 处理设施数组
         if (request.getFacilities() != null && !request.getFacilities().isEmpty()) {

@@ -4,7 +4,8 @@
       "Bash(find:*)",
       "Bash(mvn:*)",
       "WebSearch",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
