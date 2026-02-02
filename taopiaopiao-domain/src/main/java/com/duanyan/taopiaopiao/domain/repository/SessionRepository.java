@@ -1,5 +1,8 @@
 package com.duanyan.taopiaopiao.domain.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.domain.entity.Session;
 
 /**
@@ -29,4 +32,14 @@ public interface SessionRepository {
      * 删除
      */
     boolean deleteById(Long id);
+
+    /**
+     * 分页查询
+     */
+    IPage<Session> page(Page<Session> page, LambdaQueryWrapper<Session> queryWrapper);
+
+    /**
+     * 根据条件查询单个
+     */
+    Session findOne(LambdaQueryWrapper<Session> queryWrapper);
 }

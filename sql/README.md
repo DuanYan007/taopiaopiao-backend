@@ -21,6 +21,7 @@
 - `init_venues.sql` - 场馆测试数据（10条）
 - `init_events.sql` - 演出测试数据（15条）
 - `init_ticket_tiers.sql` - 票档测试数据（63条，对应15个演出）
+- `init_sessions.sql` - 场次测试数据（55条，对应15个演出）
 - `init_admin_users.sql` - 管理员账户数据
 
 ## 使用顺序
@@ -55,8 +56,8 @@ mysql -u root -p taopiaopiao < sql/init_venues.sql
 # 3. 导入演出数据（依赖 venues 表）
 mysql -u root -p taopiaopiao < sql/init_events.sql
 
-# 4. 导入票档数据（依赖 events 表）
-mysql -u root -p taopiaopiao < sql/init_ticket_tiers.sql
+# 4. 导入场次数据（依赖 events 表）
+mysql -u root -p taopiaopiao < sql/init_sessions.sql
 ```
 
 ### 一键初始化（全新数据库）
@@ -75,6 +76,7 @@ mysql -u root -p taopiaopiao < sql/ddl_admin_users.sql
 mysql -u root -p taopiaopiao < sql/init_admin_users.sql
 mysql -u root -p taopiaopiao < sql/init_venues.sql
 mysql -u root -p taopiaopiao < sql/init_events.sql
+mysql -u root -p taopiaopiao < sql/init_sessions.sql
 mysql -u root -p taopiaopiao < sql/init_ticket_tiers.sql
 ```
 
@@ -82,8 +84,9 @@ mysql -u root -p taopiaopiao < sql/init_ticket_tiers.sql
 
 ### 外键约束
 - `events.venue_id` → `venues.id`
+- `sessions.event_id` → `events.id`（ON DELETE CASCADE）
+- `sessions.venue_id` → `venues.id`
 - `ticket_tiers.event_id` → `events.id`（ON DELETE CASCADE）
-- `sessions.event_id` → `events.id`
 - `seats.session_id` → `sessions.id`
 
 **必须按依赖顺序创建表和导入数据！**
@@ -117,6 +120,7 @@ ORDER BY e.id;
 
 - 场馆：10条
 - 演出：15条
+- 场次：55条（每个演出1-8个场次）
 - 票档：63条（每个演出3-5个票档）
 - 管理员：1条（admin/admin123）
 

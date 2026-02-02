@@ -5,7 +5,9 @@
       "Bash(mvn:*)",
       "WebSearch",
       "Bash(java:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(init_sessions.sql)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []
