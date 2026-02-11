@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.6</version>
+        <version>3.2.4</version>
         <relativePath/>
     </parent>
 
@@ -18,14 +18,21 @@
     <packaging>pom</packaging>
 
     <name>TaoPiaoPiao Backend</name>
-    <description>TaoPiaoPiao Backend Project with DDD Architecture</description>
+    <description>TaoPiaoPiao Backend Project - Microservices Architecture</description>
 
     <modules>
-        <module>taopiaopiao-api</module>
-        <module>taopiaopiao-application</module>
-        <module>taopiaopiao-domain</module>
-        <module>taopiaopiao-infrastructure</module>
+        <!-- 公共模块 -->
         <module>taopiaopiao-common</module>
+        <module>taopiaopiao-common-web</module>
+
+        <!-- 微服务模块 -->
+        <module>taopiaopiao-user-service</module>
+        <module>taopiaopiao-venue-service</module>
+        <module>taopiaopiao-event-service</module>
+        <module>taopiaopiao-session-service</module>
+
+        <!-- 网关服务 -->
+        <module>taopiaopiao-gateway</module>
     </modules>
 
     <properties>
@@ -33,6 +40,10 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Spring Cloud 版本 (按官方文档对应 Spring Boot 3.2.4) -->
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
 
         <!-- 依赖版本统一管理 -->
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
@@ -48,30 +59,81 @@
     <!-- 依赖声明 -->
     <dependencyManagement>
         <dependencies>
+            <!-- Spring Cloud -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- 子模块内部依赖 -->
             <dependency>
                 <groupId>com.duanyan</groupId>
-                <artifactId>taopiaopiao-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.duanyan</groupId>
-                <artifactId>taopiaopiao-application</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.duanyan</groupId>
-                <artifactId>taopiaopiao-domain</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.duanyan</groupId>
-                <artifactId>taopiaopiao-infrastructure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-common-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- User Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-user-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-user-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Venue Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-venue-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-venue-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Event Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-event-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-event-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Session Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-session-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-session-service-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

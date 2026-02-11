@@ -15,15 +15,9 @@
     <packaging>jar</packaging>
 
     <name>taopiaopiao-common</name>
-    <description>Common module - utilities, constants, configurations</description>
+    <description>Common Core Module - utilities, constants, basic DTOs (no framework dependencies)</description>
 
     <dependencies>
-        <!-- Spring Boot Starter (基础依赖) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -47,7 +41,7 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <!-- Jackson (JSON处理) -->
+        <!-- Jackson (仅用于序列化/反序列化，不依赖 Spring) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -55,34 +49,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
-        <!-- Validation (JSR-380) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- JWT (Json Web Token) -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Spring Security (用于密码加密) -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
         <!-- Test -->
