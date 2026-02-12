@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.duanyan.taopiaopiao.sessionservice.domain.entity.Session">
+        <id column="id" property="id" />
+        <result column="event_id" property="eventId" />
+        <result column="session_name" property="sessionName" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="venue_id" property="venueId" />
+        <result column="hall_name" property="hallName" />
+        <result column="address" property="address" />
+        <result column="total_seats" property="totalSeats" />
+        <result column="available_seats" property="availableSeats" />
+        <result column="sold_seats" property="soldSeats" />
+        <result column="locked_seats" property="lockedSeats" />
+        <result column="status" property="status" />
+        <result column="seat_map_config" property="seatMapConfig" />
+        <result column="ticket_tier_config" property="ticketTierConfig" />
+        <result column="metadata" property="metadata" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+</mapper>

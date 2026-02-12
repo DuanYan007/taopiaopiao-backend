@@ -11,9 +11,31 @@
     <file url="file://$PROJECT_DIR$/taopiaopaio-infrastructure/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-common-web/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-event-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-event-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-event-service/taopiaopiao-event-service-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-event-service/taopiaopiao-event-service-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-event-service/taopiaopiao-event-service-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-gateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/taopiaopiao-infrastructure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-session-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-session-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-session-service/taopiaopiao-session-service-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-session-service/taopiaopiao-session-service-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-session-service/taopiaopiao-session-service-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-user-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-user-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-user-service/taopiaopiao-user-service-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-user-service/taopiaopiao-user-service-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-user-service/taopiaopiao-user-service-domain/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-venue-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-venue-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-venue-service/taopiaopiao-venue-service-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-venue-service/taopiaopiao-venue-service-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/taopiaopiao-venue-service/taopiaopiao-venue-service-domain/src/main/java" charset="UTF-8" />
   </component>
 </project>

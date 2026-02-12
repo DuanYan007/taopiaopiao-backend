@@ -4,78 +4,92 @@
 
 ---
 
-## 2026-01-29 - 擅自修改DDL导致数据库结构不一致
+## 2026-02-12 - Gateway Spring MVC/WebFlux 冲突
 
 ### 错误描述
-在检查 `TicketTier` 实体类与 `ddl_ticket_tiers.sql` 的 DDL 定义时，发现实体类有 `updatedAt` 字段但 DDL 中没有 `updated_at` 字段。
-
-**错误操作**：擅自修改 DDL 添加 `updated_at` 字段，试图让 DDL 匹配实体类。
-
-### 后果
-1. 数据库表结构与原始设计不一致
-2. 导致外键约束失败
-3. 数据导入失败，需要重建表
-4. 浪费用户时间，影响开发进度
+启动 Gateway 时报错：`Spring MVC found on classpath, which is incompatible with Spring Cloud Gateway`
 
 ### 根本原因
-1. **没有询问用户应该如何处理不一致**
-2. **擅自假设DDL有误**
-3. **没有考虑向后兼容性**
+`taopiaopiao-common-web` 模块包含 `spring-boot-starter-web` 依赖，被 Gateway 通过传递性依赖引入
 
-### 正确做法
-当发现代码与DDL不一致时：
-1. 先询问用户如何处理
-2. 不要擅自修改任何定义
-3. 检查是否是有意设计
-4. 提供影响分析和恢复方案
+### 解决方案
+拆分 common 模块：
+- `taopiaopiao-common`：无 Web 依赖的核心模块
+- `taopiaopiao-common-web`：包含 Web 相关配置和工具
+
+Gateway 只依赖 `taopiaopiao-common`，不依赖 `taopiaopiao-common-web`
 
 ### 防范措施
-1. 任何 DDL 修改前必须得到用户明确授权
-2. 发现不一致时优先询问而非修改
-3. 保持数据库结构稳定，避免破坏性变更
-
-### 关键教训
-> DDL 和数据库结构是系统的核心基础设施，擅自修改会导致灾难性后果。
-> 永远不要假设你比用户更了解系统设计意图。
+- Gateway 只引入无 Web 依赖的公共模块
+- 公共模块需要严格分离 Web 和非 Web 依赖
 
 ---
 
-## 2026-01-29 - BeanUtils.copyProperties 类型不匹配
+## 2026-02-12 - OpenFeign 解码器循环依赖
 
 ### 错误描述
-`request.getFacilities()` 返回 `List<String>`，但 `venue.setFacilities()` 期望 `String`。
+创建 `FeignConfig` 配置类自定义 Decoder，导致启动时报循环依赖错误：
+```
+Bean 'feignDecoder' defined in FeignDecoderConfig
+Circular dependency
+```
+
+### 根本原因
+自定义 Decoder 注入 `Decoder` 时形成了循环引用
 
 ### 解决方案
+不创建自定义 Decoder 配置：
+1. Client 接口返回 `Result<T>` 类型
+2. Service 层通过 `resp.getData()` 获取实体对象
+3. 让 Feign 使用默认的 Decoder
+
+### 教训
+- OpenFeign 不需要复杂的自定义配置即可正常工作
+- 避免在 Decoder 中注入 Decoder 相关 Bean
+
+---
+
+## 2026-02-12 - 更新时间 updatedAt 未自动更新
+
+### 错误描述
+更新实体后，数据库中 `updated_at` 字段仍然是旧值，没有更新为当前时间
+
+### 根本原因
+MyBatis-Plus 的 `strictUpdateFill` 只在字段为 `null` 时才会填充
+从数据库查询出来的实体对象 `updatedAt` 字段已有旧值，不会触发自动填充
+
+### 解决方案
+在更新操作前手动设置 `entity.setUpdatedAt(null)`
+
 ```java
-BeanUtils.copyProperties(request, venue, "facilities", "images");
+// 清空 updatedAt，让 MyBatis-Plus 自动填充
+existingSession.setUpdatedAt(null);
+sessionMapper.updateById(existingSession);
 ```
 
 ### 教训
-- DTO 和 Entity 字段类型不一致时，必须排除这些字段
-- JSON 字段（List ↔ String）需要手动序列化
+- 自动填充只在字段为 null 时生效
+- 对于更新操作，需要手动清空时间戳字段
 
 ---
 
-## 2026-01-29 - MyBatis-Plus 分页插件未配置
+## 2026-02-12 - 集成 OpenFeign 时的混淆
 
-### 错误描述
-查询第1页每页10条，实际返回全部12条。
+### 问题
+在尝试集成 OpenFeign 时，对于如何处理 `Result<T>` 包装类型产生多次误解：
+1. 尝试创建自定义 Decoder → 导致循环依赖
+2. 尝试修改其他服务的 Controller 返回类型 → 破坏 API 一致性
+3. 混淆了 Client 返回类型和服务返回类型
 
-### 解决方案
-添加 `PaginationInnerInterceptor` 配置。
+### 正确理解
+1. **Client 接口返回类型**：应与服务实际返回格式一致，即 `Result<VenueResponse>`
+2. **Feign 默认 Decoder**：能正确处理 `Result` 类型
+3. **Service 层处理**：通过 `resp.getData()` 获取实体对象
 
----
-
-## 2026-01-29 - 测试数据 event_id 硬编码
-
-### 错误描述
-`init_ticket_tiers.sql` 硬编码 event_id 为 1-15，但实际 AUTO_INCREMENT ID 可能不连续。
-
-### 解决方案
-使用 TRUNCATE 清空表后重新导入，确保 ID 连续。
-
-### 教训
-永远不要假设 AUTO_INCREMENT ID 的值。
+### 关键点
+- Feign 会自动将服务端返回的 `{"code":200, "data": {...}}` 解析为 `Result` 对象
+- `Result.getData()` 即可获取实体对象
+- 不需要额外配置
 
 ---
 
@@ -86,6 +100,8 @@ BeanUtils.copyProperties(request, venue, "facilities", "images");
 3. ❌ BeanUtils 直接复制类型不兼容的字段
 4. ❌ 在没有配置分页插件的情况下使用 Page 对象
 5. ❌ 创建临时测试文件后不清理
+6. ❌ Gateway 中引入 Spring MVC 依赖
+7. ❌ 创建会导致循环依赖的 Feign Decoder
 
 ## 最佳实践
 

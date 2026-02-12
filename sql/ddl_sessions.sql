@@ -13,7 +13,7 @@ CREATE TABLE sessions (
   locked_seats INT NOT NULL DEFAULT 0 COMMENT '锁定座位数',
   status ENUM('not_started','on_sale','sold_out','ended','off_sale') NOT NULL DEFAULT 'not_started' COMMENT '状态',
   seat_map_config JSON COMMENT '座位图配置',
-  ticket_tier_config JSON COMMENT '票档配置',
+  ticket_tier_config JSON COMMENT  '票档配置',
   metadata JSON COMMENT '扩展字段',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
