@@ -166,6 +166,9 @@ public class SessionServiceImpl implements SessionService {
             }
         }
 
+        // 清空 updatedAt，让 MyBatis-Plus 自动填充
+        existingSession.setUpdatedAt(null);
+
         // 保存更新
         sessionMapper.updateById(existingSession);
     }
@@ -203,6 +206,8 @@ public class SessionServiceImpl implements SessionService {
 
         // 更新状态
         session.setStatus(status);
+        // 清空 updatedAt，让 MyBatis-Plus 自动填充
+        session.setUpdatedAt(null);
         sessionMapper.updateById(session);
     }
 

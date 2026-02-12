@@ -215,6 +215,9 @@ public class EventServiceImpl implements EventService {
             }
         }
 
+        // 清空 updatedAt，让 MyBatis-Plus 自动填充
+        existingEvent.setUpdatedAt(null);
+
         // 保存更新演出
         eventMapper.updateById(existingEvent);
 

@@ -162,6 +162,9 @@ public class VenueServiceImpl implements VenueService {
             }
         }
 
+        // 清空 updatedAt，让 MyBatis-Plus 自动填充
+        existingVenue.setUpdatedAt(null);
+
         // 保存更新
         venueMapper.updateById(existingVenue);
     }
