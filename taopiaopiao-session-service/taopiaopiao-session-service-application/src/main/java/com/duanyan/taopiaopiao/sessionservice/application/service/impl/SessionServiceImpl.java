@@ -73,8 +73,8 @@ public class SessionServiceImpl implements SessionService {
             queryWrapper.eq(Session::getStatus, request.getStatus());
         }
 
-        // 按开始时间倒序排序
-        queryWrapper.orderByDesc(Session::getStartTime);
+        // 按ID递增排序
+        queryWrapper.orderByAsc(Session::getId);
 
         // 分页查询
         Page<Session> page = new Page<>(request.getPage(), request.getPageSize());
