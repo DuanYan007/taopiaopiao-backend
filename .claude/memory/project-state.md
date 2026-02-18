@@ -6,7 +6,7 @@
 
 **架构模式**: 微服务架构（DDD四层→三层简化）
 
-**最后更新**: 2026-02-12
+**最后更新**: 2026-02-17
 
 ---
 
@@ -103,17 +103,20 @@ taopiaopiao-backend/
 ### 场馆服务（venue-service）
 - [x] 场馆 CRUD（分页查询）
 - [x] 场馆状态管理
+- [x] 客户端查询接口（/client/venues）
 
 ### 演出服务（event-service）
 - [x] 演出 CRUD（分页查询）
 - [x] 演出状态管理
 - [x] 票档管理（TicketTier）
+- [x] 客户端查询接口（/client/events）
 
 ### 场次服务（session-service）
 - [x] 场次 CRUD（分页查询）
 - [x] 场次状态管理
 - [x] 通过 OpenFeign 调用 venue-service 和 event-service
 - [x] 场次查询时自动填充 `eventName` 和 `venueName`
+- [x] 客户端查询接口（/client/sessions）
 
 ### 网关服务（gateway）
 - [x] Spring Cloud Gateway 搭建
@@ -122,11 +125,9 @@ taopiaopiao-backend/
 
 ## 进行中（In Progress）
 
-### 场次服务 OpenFeign 集成（当前状态）
-- **已创建**: VenueClient, EventClient
-- **返回类型**: `Result<VenueResponse>`, `Result<EventResponse>`
-- **Service层处理**: 调用 `resp.getData()` 获取实体对象
-- **下一步**: 测试验证
+### 客户端接口测试（当前状态）
+- **已完成**: event-service, venue-service, session-service 客户端查询接口
+- **待验证**: 启动服务并测试接口
 
 ---
 
@@ -231,10 +232,17 @@ taopiaopiao-backend/
 
 ## 当前工作状态
 
-**最近提交**: `4ad7ed5 OpenFeign成功，我宣布glm距离AI统治世界还有一段距离`
+**最近提交**: 待提交
 
-**当前任务**: OpenFeign 集成完成，正在测试阶段
+**当前任务**: 客户端查询接口已实现
 
-**存在问题**: 无
+**已完成接口**:
+- `GET /client/events` - 演出列表（分页、筛选）
+- `GET /client/events/{id}` - 演出详情
+- `GET /client/events/{id}/sessions` - 演出场次列表
+- `GET /client/sessions` - 场次列表（分页、筛选）
+- `GET /client/sessions/{id}` - 场次详情
+- `GET /client/venues` - 场馆列表（分页、筛选）
+- `GET /client/venues/{id}` - 场馆详情
 
-**下一步**: 等待用户反馈测试结果
+**下一步**: 启动服务测试接口

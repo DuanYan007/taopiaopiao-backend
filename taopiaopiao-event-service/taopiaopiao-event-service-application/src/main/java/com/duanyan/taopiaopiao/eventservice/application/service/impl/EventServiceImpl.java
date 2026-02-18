@@ -252,7 +252,8 @@ public class EventServiceImpl implements EventService {
     /**
      * 转换为响应DTO
      */
-    private EventResponse convertToResponse(Event event) {
+    @Override
+    public EventResponse convertToResponse(Event event) {
         EventResponse response = new EventResponse();
         BeanUtils.copyProperties(event, response);
 
