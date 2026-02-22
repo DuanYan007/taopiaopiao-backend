@@ -9,7 +9,9 @@
       "Bash(init_sessions.sql)",
       "Bash(timeout:*)",
       "Bash(del:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(\"mvn\".cmd clean compile -DskipTests)",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []

@@ -16,27 +16,27 @@ spring:
           filters:
             - StripPrefix=0
 
-        # 场馆服务路由
+        # 场馆服务路由（管理端 + 客户端）
         - id: venue-service
           uri: lb://venue-service
           predicates:
-            - Path=/admin/venues/**
+            - Path=/admin/venues/**, /client/venues/**
           filters:
             - StripPrefix=0
 
-        # 演出服务路由
+        # 演出服务路由（管理端 + 客户端）
         - id: event-service
           uri: lb://event-service
           predicates:
-            - Path=/admin/events/**
+            - Path=/admin/events/**, /client/events/**
           filters:
             - StripPrefix=0
 
-        # 场次服务路由
+        # 场次服务路由（管理端 + 客户端）
         - id: session-service
           uri: lb://session-service
           predicates:
-            - Path=/admin/sessions/**
+            - Path=/admin/sessions/**, /client/sessions/**
           filters:
             - StripPrefix=0
 

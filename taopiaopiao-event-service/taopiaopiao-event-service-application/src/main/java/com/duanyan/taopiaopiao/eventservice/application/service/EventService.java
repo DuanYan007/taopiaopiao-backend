@@ -5,6 +5,7 @@ import com.duanyan.taopiaopiao.eventservice.api.dto.EventPageResponse;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventQueryRequest;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventResponse;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventUpdateRequest;
+import com.duanyan.taopiaopiao.eventservice.domain.entity.Event;
 
 /**
  * 演出服务接口
@@ -52,4 +53,12 @@ public interface EventService {
      * @param id 演出ID
      */
     void deleteEvent(Long id);
+
+    /**
+     * 将实体转换为响应DTO（供其他Service复用）
+     *
+     * @param event 演出实体
+     * @return 演出响应DTO
+     */
+    EventResponse convertToResponse(Event event);
 }
