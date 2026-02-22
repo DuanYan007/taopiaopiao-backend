@@ -86,4 +86,18 @@ public class EventController {
         eventService.deleteEvent(id);
         return Result.success();
     }
+
+    /**
+     * 更新演出状态
+     */
+    @PutMapping("/{id}/status")
+    @Operation(summary = "更新演出状态")
+    public Result<Void> updateEventStatus(
+            @Parameter(description = "演出ID", required = true)
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> request) {
+        String status = request.get("status");
+        eventService.updateEventStatus(id, status);
+        return Result.success();
+    }
 }

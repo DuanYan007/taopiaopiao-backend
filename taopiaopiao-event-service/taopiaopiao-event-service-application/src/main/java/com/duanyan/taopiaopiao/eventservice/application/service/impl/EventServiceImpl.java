@@ -249,6 +249,25 @@ public class EventServiceImpl implements EventService {
         eventMapper.deleteById(id);
     }
 
+    @Override
+    public void updateEventStatus(Long id, String status) {
+        // 检查演出是否存在
+        Event event = eventMapper.selectById(id);
+        if (event == null) {
+            throw new BusinessException(404, "演出不存在");
+        }
+
+        // 校验状态值
+        if (!StringUtils.hasText(status)) {
+            throw new BusinessException(400, "状态不能为空");
+        }
+
+        // 更新状态
+        event.setStatus(status);
+        event.setUpdatedAt(null);
+        eventMapper.updateById(event);
+    }
+
     /**
      * 转换为响应DTO
      */
