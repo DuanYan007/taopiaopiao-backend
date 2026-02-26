@@ -11,7 +11,9 @@
       "Bash(del:*)",
       "Bash(ls:*)",
       "Bash(\"mvn\".cmd clean compile -DskipTests)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(findstr:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []

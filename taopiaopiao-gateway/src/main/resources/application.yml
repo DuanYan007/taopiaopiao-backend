@@ -40,6 +40,14 @@ spring:
           filters:
             - StripPrefix=0
 
+        # 座位模板服务路由（管理端 + 客户端）
+        - id: seat-template-service
+          uri: lb://seat-template-service
+          predicates:
+            - Path=/admin/seat-templates/**, /client/seat-templates/**
+          filters:
+            - StripPrefix=0
+
       # 全局CORS配置
       globalcors:
         cors-configurations:

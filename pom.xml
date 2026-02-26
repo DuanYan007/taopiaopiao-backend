@@ -30,6 +30,7 @@
         <module>taopiaopiao-venue-service</module>
         <module>taopiaopiao-event-service</module>
         <module>taopiaopiao-session-service</module>
+        <module>taopiaopiao-seat-template-service</module>
 
         <!-- 网关服务 -->
         <module>taopiaopiao-gateway</module>
@@ -135,6 +136,18 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-session-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Seat Template Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seat-template-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seat-template-service-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
