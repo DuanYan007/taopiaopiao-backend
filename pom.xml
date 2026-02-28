@@ -24,6 +24,7 @@
         <!-- 公共模块 -->
         <module>taopiaopiao-common</module>
         <module>taopiaopiao-common-web</module>
+        <module>taopiaopiao-common-redis</module>
 
         <!-- 微服务模块 -->
         <module>taopiaopiao-user-service</module>
@@ -56,6 +57,7 @@
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-io.version>2.18.0</commons-io.version>
         <openfeign.version>4.1.0</openfeign.version>
+        <redisson.version>3.27.2</redisson.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -88,6 +90,11 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-common-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-common-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

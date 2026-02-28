@@ -5,6 +5,15 @@ spring:
   application:
     name: session-service
 
+  # Redis 配置
+  data:
+    redis:
+      host: 192.168.88.162
+      port: 6379
+      database: 0
+      password: 123456
+      timeout: 5000
+
   # 数据源配置
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource

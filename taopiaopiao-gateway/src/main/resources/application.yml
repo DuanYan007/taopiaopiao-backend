@@ -32,11 +32,11 @@ spring:
           filters:
             - StripPrefix=0
 
-        # 场次服务路由（管理端 + 客户端）
+        # 场次服务路由（管理端 + 客户端 + 测试接口）
         - id: session-service
           uri: lb://session-service
           predicates:
-            - Path=/admin/sessions/**, /client/sessions/**
+            - Path=/admin/sessions/**, /client/sessions/**, /api/test/**
           filters:
             - StripPrefix=0
 

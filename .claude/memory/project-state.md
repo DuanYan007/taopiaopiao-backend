@@ -6,7 +6,7 @@
 
 **架构模式**: 微服务架构（DDD四层→三层简化）
 
-**最后更新**: 2026-02-23
+**最后更新**: 2026-02-28
 
 ---
 
@@ -133,25 +133,29 @@ taopiaopiao-backend/
 - [x] 座位模板状态管理
 - [x] 按场馆查询模板
 - [x] 客户端查询接口（/client/seat-templates）
+- [x] 通过 Feign 调用 venue-service 获取场馆名称
 
 ---
 
 ## 进行中（In Progress）
 
-### 座位模板服务测试（当前状态）
-- **已完成**: seat-template-service 模块创建
-- **待验证**: 启动服务并测试接口
+### Redis 集成准备
+- **文档已完成**: `docs/Redis安装与配置指南.md`
+- **待执行**: Redis 安装与 common-redis 模块创建
 
 ---
 
 ## 待开发（Todo）
 
 ### 抢票/秒杀业务域
-- [ ] Redis 座存设计
+- [x] Redis 安装文档（待执行安装）
+- [ ] common-redis 模块创建
+- [ ] 座位状态数据结构初始化
+- [ ] Lua 锁座脚本编写
+- [ ] Seckill Service（选座服务）
+- [ ] Order Service（订单服务）
 - [ ] RocketMQ 消息队列
 - [ ] 抢票资格预约
-- [ ] 选座与锁座
-- [ ] 订单服务
 - [ ] 支付集成
 - [ ] 超时取消机制
 
@@ -265,4 +269,17 @@ taopiaopiao-backend/
 - Session Service: 8084
 - **Seat Template Service: 8085**
 
-**下一步**: 启动 Gateway 和 seat-template-service 测试接口
+**下一步**: Redis 安装与 common-redis 模块创建
+
+### 抢票/秒杀业务域
+- [x] Redis 安装文档（待执行安装）
+- [ ] common-redis 模块创建
+- [ ] 座位状态数据结构初始化
+- [ ] Lua 锁座脚本编写
+- [ ] Seckill Service（选座服务）
+- [ ] Order Service（订单服务）
+- [ ] RocketMQ 消息队列
+- [ ] 抢票资格预约
+- [ ] Notification Service（通知服务）
+- [ ] 支付集成
+- [ ] 超时取消机制
