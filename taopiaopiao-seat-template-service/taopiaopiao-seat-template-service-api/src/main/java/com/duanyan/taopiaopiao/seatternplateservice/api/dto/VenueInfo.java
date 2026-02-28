@@ -6,11 +6,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 场馆信息DTO（用于接收venue-service的返回数据）
  *
- * 注意：此DTO的字段定义与 venue-service 的 VenueResponse 保持兼容，
+ * 注意：此DTO的字段定义与 venue-service 的 VenueResponse 完全一致，
  * 以便 Feign 调用时能正确反序列化
  *
  * @author duanyan
@@ -44,14 +45,14 @@ public class VenueInfo {
     @Schema(description = "容纳人数")
     private Integer capacity;
 
-    @Schema(description = "设施数组(JSON)")
-    private String facilities;
+    @Schema(description = "设施数组")
+    private List<String> facilities;
 
     @Schema(description = "场馆介绍")
     private String description;
 
-    @Schema(description = "场馆图片URL列表(JSON)")
-    private String images;
+    @Schema(description = "场馆图片URL列表")
+    private List<String> images;
 
     @Schema(description = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
