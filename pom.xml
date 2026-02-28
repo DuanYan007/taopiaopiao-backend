@@ -24,12 +24,14 @@
         <!-- 公共模块 -->
         <module>taopiaopiao-common</module>
         <module>taopiaopiao-common-web</module>
+        <module>taopiaopiao-common-redis</module>
 
         <!-- 微服务模块 -->
         <module>taopiaopiao-user-service</module>
         <module>taopiaopiao-venue-service</module>
         <module>taopiaopiao-event-service</module>
         <module>taopiaopiao-session-service</module>
+        <module>taopiaopiao-seat-template-service</module>
 
         <!-- 网关服务 -->
         <module>taopiaopiao-gateway</module>
@@ -55,6 +57,7 @@
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-io.version>2.18.0</commons-io.version>
         <openfeign.version>4.1.0</openfeign.version>
+        <redisson.version>3.27.2</redisson.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -87,6 +90,11 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-common-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-common-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -135,6 +143,18 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-session-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Seat Template Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seat-template-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seat-template-service-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

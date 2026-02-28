@@ -6,7 +6,7 @@
 
 **架构模式**: 微服务架构（DDD四层→三层简化）
 
-**最后更新**: 2026-02-17
+**最后更新**: 2026-02-28
 
 ---
 
@@ -73,6 +73,13 @@ taopiaopiao-backend/
     │   ├── service/impl/
     │   └── mapper/
     └── taopiaopiao-session-service-domain/
+├── taopiaopiao-seat-template-service/  # 座位模板服务
+    ├── taopiaopiao-seat-template-service-api/
+    ├── taopiaopiao-seat-template-service-application/
+    │   ├── controller/
+    │   ├── service/impl/
+    │   └── mapper/
+    └── taopiaopiao-seat-template-service-domain/
 ```
 
 ---
@@ -121,29 +128,38 @@ taopiaopiao-backend/
 ### 网关服务（gateway）
 - [x] Spring Cloud Gateway 搭建
 
+### 座位模板服务（seat-template-service）
+- [x] 座位模板 CRUD（分页查询）
+- [x] 座位模板状态管理
+- [x] 按场馆查询模板
+- [x] 客户端查询接口（/client/seat-templates）
+- [x] 通过 Feign 调用 venue-service 获取场馆名称
+
 ---
 
 ## 进行中（In Progress）
 
-### 客户端接口测试（当前状态）
-- **已完成**: event-service, venue-service, session-service 客户端查询接口
-- **待验证**: 启动服务并测试接口
+### Redis 集成准备
+- **文档已完成**: `docs/Redis安装与配置指南.md`
+- **待执行**: Redis 安装与 common-redis 模块创建
 
 ---
 
 ## 待开发（Todo）
 
 ### 抢票/秒杀业务域
-- [ ] Redis 座存设计
+- [x] Redis 安装文档（待执行安装）
+- [ ] common-redis 模块创建
+- [ ] 座位状态数据结构初始化
+- [ ] Lua 锁座脚本编写
+- [ ] Seckill Service（选座服务）
+- [ ] Order Service（订单服务）
 - [ ] RocketMQ 消息队列
 - [ ] 抢票资格预约
-- [ ] 选座与锁座
-- [ ] 订单服务
 - [ ] 支付集成
 - [ ] 超时取消机制
 
 ### 其他
-- [ ] 座位模板管理
 - [ ] 前端对接联调
 
 ---
@@ -163,6 +179,7 @@ taopiaopiao-backend/
 - **Venue Service**: 8082
 - **Event Service**: 8083
 - **Session Service**: 8084
+- **Seat Template Service**: 8085
 
 ### API文档
 - **Knife4j UI**: http://localhost:8080/doc.html
@@ -227,6 +244,8 @@ taopiaopiao-backend/
 2. ❌ 假设 AUTO_INCREMENT ID 的值
 3. ❌ Gateway 中引入 Spring MVC 依赖
 4. ❌ 创建会导致循环依赖的 Feign Decoder
+5. ❌ 跨服务直接 import 其他服务的 DTO
+6. ❌ 新增微服务后忘记配置网关路由
 
 ---
 
@@ -234,15 +253,33 @@ taopiaopiao-backend/
 
 **最近提交**: 待提交
 
-**当前任务**: 客户端查询接口已实现
+**当前任务**: seat-template-service 已完成，网关路由已配置
 
 **已完成接口**:
-- `GET /client/events` - 演出列表（分页、筛选）
-- `GET /client/events/{id}` - 演出详情
-- `GET /client/events/{id}/sessions` - 演出场次列表
-- `GET /client/sessions` - 场次列表（分页、筛选）
-- `GET /client/sessions/{id}` - 场次详情
-- `GET /client/venues` - 场馆列表（分页、筛选）
-- `GET /client/venues/{id}` - 场馆详情
+- 演出相关: `GET /client/events`、`GET /client/events/{id}`、`GET /client/events/{id}/sessions`
+- 场次相关: `GET /client/sessions`、`GET /client/sessions/{id}`
+- 场馆相关: `GET /client/venues`、`GET /client/venues/{id}`
+- **座位模板**: `GET /api/admin/seat-templates`、`POST /api/admin/seat-templates`、`PUT /api/admin/seat-templates/{id}`、`DELETE /api/admin/seat-templates/{id}`、`GET /api/client/seat-templates/{id}/layout`
 
-**下一步**: 启动服务测试接口
+**服务端口**:
+- Gateway: 8080
+- User Service: 8081
+- Venue Service: 8082
+- Event Service: 8083
+- Session Service: 8084
+- **Seat Template Service: 8085**
+
+**下一步**: Redis 安装与 common-redis 模块创建
+
+### 抢票/秒杀业务域
+- [x] Redis 安装文档（待执行安装）
+- [ ] common-redis 模块创建
+- [ ] 座位状态数据结构初始化
+- [ ] Lua 锁座脚本编写
+- [ ] Seckill Service（选座服务）
+- [ ] Order Service（订单服务）
+- [ ] RocketMQ 消息队列
+- [ ] 抢票资格预约
+- [ ] Notification Service（通知服务）
+- [ ] 支付集成
+- [ ] 超时取消机制

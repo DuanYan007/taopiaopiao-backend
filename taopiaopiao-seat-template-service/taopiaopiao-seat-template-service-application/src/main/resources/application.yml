@@ -1,18 +1,9 @@
 server:
-  port: 8084
+  port: 8085
 
 spring:
   application:
-    name: session-service
-
-  # Redis 配置
-  data:
-    redis:
-      host: 192.168.88.162
-      port: 6379
-      database: 0
-      password: 123456
-      timeout: 5000
+    name: seat-template-service
 
   # 数据源配置
   datasource:
@@ -32,13 +23,11 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        username: nacos
-        password: nacos
 
 # MyBatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*Mapper.xml
-  type-aliases-package: com.duanyan.taopiaopiao.sessionservice.domain.entity
+  type-aliases-package: com.duanyan.taopiaopiao.seatternplateservice.domain.entity
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
@@ -58,4 +47,5 @@ logging:
   level:
     root: INFO
     com.duanyan.taopiaopiao: DEBUG
-    com.duanyan.taopiaopiao.sessionservice.application.mapper: DEBUG
+    com.duanyan.taopiaopiao.seatternplateservice.application.mapper: DEBUG
+    com.alibaba.nacos.client.naming: DEBUG

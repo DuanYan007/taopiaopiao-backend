@@ -55,6 +55,14 @@ public interface EventService {
     void deleteEvent(Long id);
 
     /**
+     * 更新演出状态
+     *
+     * @param id 演出ID
+     * @param status 状态
+     */
+    void updateEventStatus(Long id, String status);
+
+    /**
      * 将实体转换为响应DTO（供其他Service复用）
      *
      * @param event 演出实体

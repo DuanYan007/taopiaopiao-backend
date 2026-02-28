@@ -93,6 +93,29 @@ sessionMapper.updateById(existingSession);
 
 ---
 
+## 2026-02-23 - 微服务间错误依赖
+
+### 错误描述
+在创建 seat-template-service 时，错误地在 application 模块中直接 import 了其他服务的 DTO：
+```java
+import com.duanyan.taopiaopiao.venueservice.api.dto.VenueResponse;
+```
+
+### 根本原因
+违反了微服务边界原则，服务之间不应该直接依赖彼此的 API 模块。
+
+### 解决方案
+1. **服务自己的 DTO 定义在自己的 api 模块中**，如 `VenueInfo.java`
+2. **跨服务调用通过 Feign Client**，Client 接口定义在调用方服务内部
+3. **domain 层完全独立**，只依赖 common 模块
+
+### 教训
+- 微服务之间必须通过 Feign/REST API 通信，不能直接依赖彼此的代码
+- 每个服务的 api 模块只给外部提供接口定义，不应被其他服务直接 import
+- 如果需要其他服务的数据结构，应在本服务内定义轻量级 DTO
+
+---
+
 ## 禁止模式清单
 
 1. ❌ 未经用户确认修改 DDL
@@ -102,6 +125,51 @@ sessionMapper.updateById(existingSession);
 5. ❌ 创建临时测试文件后不清理
 6. ❌ Gateway 中引入 Spring MVC 依赖
 7. ❌ 创建会导致循环依赖的 Feign Decoder
+8. ❌ 跨服务直接 import 其他服务的 DTO
+
+---
+
+## 2026-02-23 - 新增服务后网关路由未配置
+
+### 错误描述
+新增 seat-template-service 后，前端请求 `/api/admin/seat-templates` 返回 404
+
+### 根本原因
+网关 `application.yml` 中没有配置该服务的路由规则
+
+### 解决方案
+在网关配置中添加路由：
+```yaml
+- id: seat-template-service
+  uri: lb://seat-template-service
+  predicates:
+    - Path=/admin/seat-templates/**, /client/seat-templates/**
+  filters:
+    - StripPrefix=0
+```
+
+### 教训
+- **每次新增微服务后，必须在网关配置中添加对应的路由规则**
+- 路由 Path 要同时包含管理端和客户端路径
+- 使用 `lb://` 协议实现负载均衡
+
+### 防范措施
+- 新增服务检查清单中增加"网关路由配置"项
+- 建议在项目文档中维护服务列表与网关路由的对应关系
+
+---
+
+## 禁止模式清单
+
+1. ❌ 未经用户确认修改 DDL
+2. ❌ 假设 AUTO_INCREMENT ID 的值
+3. ❌ BeanUtils 直接复制类型不兼容的字段
+4. ❌ 在没有配置分页插件的情况下使用 Page 对象
+5. ❌ 创建临时测试文件后不清理
+6. ❌ Gateway 中引入 Spring MVC 依赖
+7. ❌ 创建会导致循环依赖的 Feign Decoder
+8. ❌ 跨服务直接 import 其他服务的 DTO
+9. ❌ 新增微服务后忘记配置网关路由
 
 ## 最佳实践
 

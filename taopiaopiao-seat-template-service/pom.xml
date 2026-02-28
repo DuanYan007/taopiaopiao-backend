@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.duanyan</groupId>
+        <artifactId>taopiaopiao-backend</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>taopiaopiao-seat-template-service</artifactId>
+    <packaging>pom</packaging>
+
+    <name>taopiaopiao-seat-template-service</name>
+    <description>Seat Template Service - Seat layout and template management</description>
+
+    <modules>
+        <module>taopiaopiao-seat-template-service-api</module>
+        <module>taopiaopiao-seat-template-service-domain</module>
+        <module>taopiaopiao-seat-template-service-application</module>
+    </modules>
+
+</project>
