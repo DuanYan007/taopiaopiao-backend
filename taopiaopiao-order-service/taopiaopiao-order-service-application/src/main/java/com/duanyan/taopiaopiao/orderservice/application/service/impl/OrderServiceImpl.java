@@ -1,5 +1,6 @@
 package com.duanyan.taopiaopiao.orderservice.application.service.impl;
 
+import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
 import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * 订单服务实现
@@ -111,8 +111,8 @@ public class OrderServiceImpl implements OrderService {
         confirmRequest.setUserId(userId);
         confirmRequest.setSeatIds(seatIds);
 
-        Boolean success = seckillClient.confirmPurchase(confirmRequest);
-        if (!success) {
+        Result<Boolean> result = seckillClient.confirmPurchase(confirmRequest);
+        if (result == null || !result.isSuccess() || result.getData() == null) {
             throw new RuntimeException("确认购买失败");
         }
 
@@ -144,7 +144,11 @@ public class OrderServiceImpl implements OrderService {
 
         // 释放座位
         List<String> seatIds = List.of(order.getSeatIds().split(","));
-        seckillClient.releaseSeats(order.getSessionId(), userId, seatIds);
+        Result<Integer> result = seckillClient.releaseSeats(order.getSessionId(), userId, seatIds);
+
+        if (result == null || !result.isSuccess()) {
+            log.warn("释放座位失败: orderNo={}", orderNo);
+        }
 
         // 更新订单状态
         order.setStatus(OrderStatus.CANCELLED.getCode());
@@ -181,12 +185,13 @@ public class OrderServiceImpl implements OrderService {
         for (Order order : timeoutOrders) {
             try {
                 List<String> seatIds = List.of(order.getSeatIds().split(","));
-                seckillClient.releaseSeats(order.getSessionId(), order.getUserId(), seatIds);
+                Result<Integer> result = seckillClient.releaseSeats(order.getSessionId(), order.getUserId(), seatIds);
 
-                order.setStatus(OrderStatus.TIMEOUT.getCode());
-                orderMapper.updateById(order);
-
-                log.info("订单超时取消: orderNo={}", order.getOrderNo());
+                if (result != null && result.isSuccess()) {
+                    order.setStatus(OrderStatus.TIMEOUT.getCode());
+                    orderMapper.updateById(order);
+                    log.info("订单超时取消: orderNo={}", order.getOrderNo());
+                }
             } catch (Exception e) {
                 log.error("取消超时订单失败: orderNo={}", order.getOrderNo(), e);
             }
@@ -194,7 +199,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private String generateOrderNo() {
-        return "ORD" + System.currentTimeMillis() + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return "ORD" + System.currentTimeMillis() + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
 
     private OrderResponse buildOrderResponse(Order order) {

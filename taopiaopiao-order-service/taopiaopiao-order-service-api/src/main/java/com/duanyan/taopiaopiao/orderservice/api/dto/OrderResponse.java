@@ -2,7 +2,7 @@ package com.duanyan.taopiaopiao.orderservice.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import.Builder;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

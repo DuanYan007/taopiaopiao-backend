@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 场馆管理控制器
  *
@@ -37,6 +39,16 @@ public class VenueController {
     @Operation(summary = "分页查询场馆列表")
     public Result<VenuePageResponse> getVenuePage(VenueQueryRequest request) {
         VenuePageResponse response = venueService.getVenuePage(request);
+        return Result.success(response);
+    }
+
+    /**
+     * 查询所有场馆列表
+     */
+    @GetMapping("/all")
+    @Operation(summary = "查询所有场馆列表")
+    public Result<List<VenueResponse>> getAllVenues() {
+        List<VenueResponse> response = venueService.getAllVenues();
         return Result.success(response);
     }
 

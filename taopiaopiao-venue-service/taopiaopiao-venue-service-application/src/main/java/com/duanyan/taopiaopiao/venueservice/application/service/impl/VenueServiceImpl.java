@@ -40,6 +40,17 @@ public class VenueServiceImpl implements VenueService {
     private final ObjectMapper objectMapper;
 
     @Override
+    public List<VenueResponse> getAllVenues() {
+        LambdaQueryWrapper<Venue> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByAsc(Venue::getId);
+
+        List<Venue> venueList = venueMapper.selectList(queryWrapper);
+        return venueList.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public VenuePageResponse getVenuePage(VenueQueryRequest request) {
         // 构建查询条件
         LambdaQueryWrapper<Venue> queryWrapper = new LambdaQueryWrapper<>();
@@ -54,8 +65,8 @@ public class VenueServiceImpl implements VenueService {
             queryWrapper.eq(Venue::getCity, request.getCity());
         }
 
-        // 按创建时间倒序排序
-        queryWrapper.orderByDesc(Venue::getCreatedAt);
+        // 按ID递增排序
+        queryWrapper.orderByAsc(Venue::getId);
 
         // 分页查询
         Page<Venue> page = new Page<>(request.getPage(), request.getPageSize());

@@ -6,6 +6,8 @@ import com.duanyan.taopiaopiao.venueservice.api.dto.VenueQueryRequest;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueResponse;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueUpdateRequest;
 
+import java.util.List;
+
 /**
  * 场馆服务接口
  *
@@ -21,6 +23,13 @@ public interface VenueService {
      * @return 分页响应
      */
     VenuePageResponse getVenuePage(VenueQueryRequest request);
+
+    /**
+     * 查询所有场馆列表
+     *
+     * @return 所有场馆列表
+     */
+    List<VenueResponse> getAllVenues();
 
     /**
      * 根据ID查询场馆详情

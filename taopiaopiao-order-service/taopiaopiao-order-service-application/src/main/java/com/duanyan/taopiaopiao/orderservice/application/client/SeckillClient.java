@@ -1,10 +1,14 @@
 package com.duanyan.taopiaopiao.orderservice.application.client;
 
+import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatRequest;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * 秒杀服务客户端
@@ -16,8 +20,10 @@ public interface SeckillClient {
     LockSeatResponse lockSeats(@RequestBody LockSeatRequest request);
 
     @PostMapping("/confirm")
-    Boolean confirmPurchase(@RequestBody LockSeatRequest request);
+    Result<Boolean> confirmPurchase(@RequestBody LockSeatRequest request);
 
     @PostMapping("/release")
-    Integer releaseSeats(Long sessionId, Long userId, java.util.List<String> seatIds);
+    Result<Integer> releaseSeats(@RequestParam("sessionId") Long sessionId,
+                                @RequestParam("userId") Long userId,
+                                @RequestParam("seatIds") List<String> seatIds);
 }
