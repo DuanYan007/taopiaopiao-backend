@@ -100,4 +100,16 @@ public class EventController {
         eventService.updateEventStatus(id, status);
         return Result.success();
     }
+
+    /**
+     * 获取演出最低价格
+     */
+    @GetMapping("/{id}/price")
+    @Operation(summary = "获取演出最低价格")
+    public Result<java.math.BigDecimal> getEventPrice(
+            @Parameter(description = "演出ID", required = true)
+            @PathVariable Long id) {
+        java.math.BigDecimal price = eventService.getMinPrice(id);
+        return Result.success(price);
+    }
 }

@@ -1,0 +1,62 @@
+package com.duanyan.taopiaopiao.orderservice.application.controller;
+
+import com.duanyan.taopiaopiao.common.response.Result;
+import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
+import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
+import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
+import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 订单控制器
+ */
+@Slf4j
+@Tag(name = "订单管理", description = "订单相关接口")
+@RestController
+@RequestMapping("/client/orders")
+@RequiredArgsConstructor
+public class OrderController {
+
+    private final OrderService orderService;
+
+    @PostMapping
+    @Operation(summary = "创建订单")
+    public Result<OrderResponse> createOrder(@RequestHeader("X-User-Id") Long userId,
+                                              @Valid @RequestBody CreateOrderRequest request) {
+        OrderResponse response = orderService.createOrder(userId, request);
+        return Result.success(response);
+    }
+
+    @PostMapping("/pay")
+    @Operation(summary = "支付订单")
+    public Result<Boolean> payOrder(@RequestHeader("X-User-Id") Long userId,
+                                     @Valid @RequestBody PayOrderRequest request) {
+        return Result.success(orderService.payOrder(userId, request));
+    }
+
+    @PostMapping("/{orderNo}/cancel")
+    @Operation(summary = "取消订单")
+    public Result<Boolean> cancelOrder(@RequestHeader("X-User-Id") Long userId,
+                                        @PathVariable String orderNo) {
+        return Result.success(orderService.cancelOrder(userId, orderNo));
+    }
+
+    @GetMapping("/{orderNo}")
+    @Operation(summary = "查询订单")
+    public Result<OrderResponse> getOrderByNo(@RequestHeader("X-User-Id") Long userId,
+                                               @PathVariable String orderNo) {
+        OrderResponse response = orderService.getOrderByNo(userId, orderNo);
+        return Result.success(response);
+    }
+
+    @GetMapping("/ping")
+    @Operation(summary = "健康检查")
+    public Result<String> ping() {
+        return Result.success("order-service is running");
+    }
+}

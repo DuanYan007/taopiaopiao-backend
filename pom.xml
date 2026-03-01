@@ -32,6 +32,8 @@
         <module>taopiaopiao-event-service</module>
         <module>taopiaopiao-session-service</module>
         <module>taopiaopiao-seat-template-service</module>
+        <module>taopiaopiao-seckill-service</module>
+        <module>taopiaopiao-order-service</module>
 
         <!-- 网关服务 -->
         <module>taopiaopiao-gateway</module>
@@ -155,6 +157,30 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-seat-template-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Seckill Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seckill-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-seckill-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Order Service -->
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-order-service-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-order-service-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

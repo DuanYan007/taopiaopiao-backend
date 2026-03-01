@@ -30,7 +30,7 @@ for i = 4, 4 + seatCount - 1 do
     end
 
     redis.call("SET", seatKey, 1, "EX", expireSeconds)
-    redis.call("HSET", userLockKey, seatId, tostring(ARGV[4 + seatCount + i - 4]))
+    redis.call("HSET", userLockKey, seatId, "1")
 end
 
 return 0

@@ -268,6 +268,18 @@ public class EventServiceImpl implements EventService {
         eventMapper.updateById(event);
     }
 
+    @Override
+    public BigDecimal getMinPrice(Long eventId) {
+        LambdaQueryWrapper<TicketTier> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TicketTier::getEventId, eventId);
+        queryWrapper.eq(TicketTier::getIsActive, true);
+        queryWrapper.orderByAsc(TicketTier::getPrice);
+        queryWrapper.last("LIMIT 1");
+
+        TicketTier tier = ticketTierMapper.selectOne(queryWrapper);
+        return tier != null ? tier.getPrice() : BigDecimal.ZERO;
+    }
+
     /**
      * 转换为响应DTO
      */

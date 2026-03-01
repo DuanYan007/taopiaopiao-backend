@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBatch;
 import org.redisson.api.RScript;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -79,10 +80,8 @@ public class RedisServiceImpl implements RedisService {
         params.add(String.valueOf(seatIds.size()));
         params.add(String.valueOf(expireSeconds));
         params.addAll(seatIds);
-        // 添加当前时间戳作为锁座时间
-        params.add(String.valueOf(System.currentTimeMillis()));
 
-        RScript script = redissonClient.getScript();
+        RScript script = redissonClient.getScript(StringCodec.INSTANCE);
         Long result = script.eval(
                 RScript.Mode.READ_WRITE,
                 LOCK_SEAT_SCRIPT,
@@ -107,7 +106,7 @@ public class RedisServiceImpl implements RedisService {
         params.add(String.valueOf(seatIds.size()));
         params.addAll(seatIds);
 
-        RScript script = redissonClient.getScript();
+        RScript script = redissonClient.getScript(StringCodec.INSTANCE);
         Long result = script.eval(
                 RScript.Mode.READ_WRITE,
                 UNLOCK_SEAT_SCRIPT,
@@ -131,7 +130,7 @@ public class RedisServiceImpl implements RedisService {
         params.add(String.valueOf(seatIds.size()));
         params.addAll(seatIds);
 
-        RScript script = redissonClient.getScript();
+        RScript script = redissonClient.getScript(StringCodec.INSTANCE);
         Long result = script.eval(
                 RScript.Mode.READ_WRITE,
                 CONFIRM_PURCHASE_SCRIPT,

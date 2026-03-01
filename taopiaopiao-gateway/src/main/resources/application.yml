@@ -48,6 +48,22 @@ spring:
           filters:
             - StripPrefix=0
 
+        # 秒杀/选座服务路由（客户端）
+        - id: seckill-service
+          uri: lb://seckill-service
+          predicates:
+            - Path=/client/seckill/**, /api/seckill/**
+          filters:
+            - StripPrefix=0
+
+        # 订单服务路由（客户端）
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/client/orders/**
+          filters:
+            - StripPrefix=0
+
       # 全局CORS配置
       globalcors:
         cors-configurations:

@@ -63,6 +63,14 @@ public interface EventService {
     void updateEventStatus(Long id, String status);
 
     /**
+     * 获取演出最低价格
+     *
+     * @param eventId 演出ID
+     * @return 最低价格
+     */
+    java.math.BigDecimal getMinPrice(Long eventId);
+
+    /**
      * 将实体转换为响应DTO（供其他Service复用）
      *
      * @param event 演出实体

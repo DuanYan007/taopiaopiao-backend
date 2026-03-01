@@ -13,7 +13,10 @@
       "Bash(\"mvn\".cmd clean compile -DskipTests)",
       "Bash(where:*)",
       "Bash(findstr:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(cmd /c \"cd /d G:\\\\project\\\\taopiaopiao-backend && mvn clean compile -pl taopiaopiao-seckill-service -am\")",
+      "Bash(cmd:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
