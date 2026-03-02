@@ -48,26 +48,12 @@ public class SessionCreateRequest {
     @Schema(description = "场馆ID", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long venueId;
 
-    @Schema(description = "馆厅名称", example = "主体育场")
-    private String hallName;
-
     @Schema(description = "详细地址")
     private String address;
 
-    @NotNull(message = "总座位数不能为空")
-    @Min(value = 1, message = "总座位数必须大于0")
-    @Schema(description = "总座位数", example = "8560", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer totalSeats;
-
-    @NotNull(message = "可售座位数不能为空")
-    @Min(value = 0, message = "可售座位数不能小于0")
-    @Schema(description = "可售座位数", example = "8560", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer availableSeats;
-
-    @NotEmpty(message = "票档配置不能为空")
-    @Valid
-    @Schema(description = "票档配置", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<TicketTierConfigRequest> ticketTierConfig;
+    @NotNull(message = "座位模板ID不能为空")
+    @Schema(description = "座位模板ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long seatTemplateId;
 
     @Valid
     @Schema(description = "扩展配置")
@@ -76,42 +62,6 @@ public class SessionCreateRequest {
     @NotBlank(message = "状态不能为空")
     @Schema(description = "状态", example = "not_started", requiredMode = Schema.RequiredMode.REQUIRED)
     private String status;
-
-    /**
-     * 票档配置请求
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "票档配置请求")
-    public static class TicketTierConfigRequest {
-        @NotNull(message = "票档ID不能为空")
-        @Schema(description = "票档ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-        private Long tierId;
-
-        @Schema(description = "基础价格", example = "2580")
-        private Integer basePrice;
-
-        @Schema(description = "自定义价格", example = "2380")
-        private Integer overridePrice;
-
-        @NotNull(message = "座位分配数不能为空")
-        @Min(value = 0, message = "座位分配数不能小于0")
-        @Schema(description = "座位分配数", example = "560", requiredMode = Schema.RequiredMode.REQUIRED)
-        private Integer seatCount;
-
-        @NotNull(message = "可售座位数不能为空")
-        @Min(value = 0, message = "可售座位数不能小于0")
-        @Schema(description = "可售座位数", example = "560", requiredMode = Schema.RequiredMode.REQUIRED)
-        private Integer availableSeats;
-
-        @Schema(description = "限购数", example = "2")
-        private Integer maxPurchase;
-
-        @Schema(description = "是否启用", example = "true")
-        private Boolean enabled;
-    }
 
     /**
      * 场次扩展配置请求

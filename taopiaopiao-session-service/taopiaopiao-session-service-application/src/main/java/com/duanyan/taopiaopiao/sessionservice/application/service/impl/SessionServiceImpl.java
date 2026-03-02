@@ -132,17 +132,7 @@ public class SessionServiceImpl implements SessionService {
     public Long createSession(SessionCreateRequest request) {
         // 转换为实体
         Session session = new Session();
-        BeanUtils.copyProperties(request, session, "ticketTierConfig", "metadata");
-
-        // 处理票档配置（转为JSON字符串）
-        if (request.getTicketTierConfig() != null && !request.getTicketTierConfig().isEmpty()) {
-            try {
-                session.setTicketTierConfig(objectMapper.writeValueAsString(request.getTicketTierConfig()));
-            } catch (Exception e) {
-                log.error("票档配置转换失败", e);
-                throw new BusinessException(500, "票档配置数据格式错误");
-            }
-        }
+        BeanUtils.copyProperties(request, session, "metadata");
 
         // 处理metadata（扩展配置）
         if (request.getMetadata() != null) {
@@ -157,9 +147,13 @@ public class SessionServiceImpl implements SessionService {
         // 初始化座位数
         session.setSoldSeats(0);
         session.setLockedSeats(0);
+        // 从座位模板获取可售座位数（TODO: 调用座位模板服务获取）
+        session.setAvailableSeats(0);
 
         // 保存场次
         sessionMapper.insert(session);
+
+        // TODO: 根据座位模板生成具体座位记录
 
         return session.getId();
     }
@@ -174,17 +168,7 @@ public class SessionServiceImpl implements SessionService {
         }
 
         // 更新字段
-        BeanUtils.copyProperties(request, existingSession, "ticketTierConfig", "metadata");
-
-        // 处理票档配置
-        if (request.getTicketTierConfig() != null && !request.getTicketTierConfig().isEmpty()) {
-            try {
-                existingSession.setTicketTierConfig(objectMapper.writeValueAsString(request.getTicketTierConfig()));
-            } catch (Exception e) {
-                log.error("票档配置转换失败", e);
-                throw new BusinessException(500, "票档配置数据格式错误");
-            }
-        }
+        BeanUtils.copyProperties(request, existingSession, "metadata");
 
         // 处理metadata
         if (request.getMetadata() != null) {
@@ -278,8 +262,8 @@ public class SessionServiceImpl implements SessionService {
             }
         }
 
-        // 生成票档信息列表 - 从票档配置中解析
-        response.setTicketTiers(generateTicketTierInfo(session));
+        // TODO: 从座位模板获取 hallName, totalSeats, ticketTiers
+        // 通过 seatTemplateId 调用座位模板服务获取
 
         return response;
     }
@@ -338,40 +322,6 @@ public class SessionServiceImpl implements SessionService {
                 log.error("查询演出信息失败, eventId: {}, error: {}", id, e.getMessage());
             }
         }
-        return result;
-    }
-
-    /**
-     * 生成票档信息 - 从场次的配置生成
-     */
-    private List<SessionResponse.TicketTierInfo> generateTicketTierInfo(Session session) {
-        List<SessionResponse.TicketTierInfo> result = new ArrayList<>();
-
-        if (StringUtils.hasText(session.getTicketTierConfig())) {
-            try {
-                List<SessionCreateRequest.TicketTierConfigRequest> configs = objectMapper.readValue(
-                        session.getTicketTierConfig(),
-                        new TypeReference<List<SessionCreateRequest.TicketTierConfigRequest>>() {}
-                );
-
-                for (SessionCreateRequest.TicketTierConfigRequest config : configs) {
-                    SessionResponse.TicketTierInfo info = SessionResponse.TicketTierInfo.builder()
-                            .id(config.getTierId())
-                            .price(config.getBasePrice() != null ? config.getBasePrice() :
-                                   (config.getOverridePrice() != null ? config.getOverridePrice() : 0))
-                            .seatCount(config.getSeatCount())
-                            .availableSeats(config.getAvailableSeats())
-                            .maxPurchase(config.getMaxPurchase())
-                            .enabled(config.getEnabled() != null ? config.getEnabled() : true)
-                            .build();
-
-                    result.add(info);
-                }
-            } catch (Exception e) {
-                log.error("票档配置解析失败: {}", e.getMessage());
-            }
-        }
-
         return result;
     }
 }

@@ -48,26 +48,12 @@ public class SessionUpdateRequest {
     @Schema(description = "场馆ID", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long venueId;
 
-    @Schema(description = "馆厅名称", example = "主体育场")
-    private String hallName;
-
     @Schema(description = "详细地址")
     private String address;
 
-    @NotNull(message = "总座位数不能为空")
-    @Min(value = 1, message = "总座位数必须大于0")
-    @Schema(description = "总座位数", example = "8560", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer totalSeats;
-
-    @NotNull(message = "可售座位数不能为空")
-    @Min(value = 0, message = "可售座位数不能小于0")
-    @Schema(description = "可售座位数", example = "8560", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer availableSeats;
-
-    @NotEmpty(message = "票档配置不能为空")
-    @Valid
-    @Schema(description = "票档配置", requiredMode = Schema.RequiredMode.REQUIRED)
-    private List<SessionCreateRequest.TicketTierConfigRequest> ticketTierConfig;
+    @NotNull(message = "座位模板ID不能为空")
+    @Schema(description = "座位模板ID", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long seatTemplateId;
 
     @Valid
     @Schema(description = "扩展配置")

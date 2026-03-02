@@ -49,14 +49,14 @@ public class SessionResponse {
     @Schema(description = "场馆名称")
     private String venueName;
 
+    @Schema(description = "座位模板ID")
+    private Long seatTemplateId;
+
     @Schema(description = "馆厅名称")
     private String hallName;
 
     @Schema(description = "详细地址")
     private String address;
-
-    @Schema(description = "总座位数")
-    private Integer totalSeats;
 
     @Schema(description = "可售座位数")
     private Integer availableSeats;
