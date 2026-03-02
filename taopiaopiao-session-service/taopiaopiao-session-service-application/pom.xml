@@ -59,11 +59,6 @@
         <!-- 依赖其他服务的 API 模块 -->
         <dependency>
             <groupId>com.duanyan</groupId>
-            <artifactId>taopiaopiao-venue-service-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.duanyan</groupId>
             <artifactId>taopiaopiao-event-service-api</artifactId>
         </dependency>
 

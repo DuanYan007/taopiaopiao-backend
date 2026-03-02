@@ -8,7 +8,6 @@
         <result column="type" property="type" />
         <result column="artist" property="artist" />
         <result column="city" property="city" />
-        <result column="venue_id" property="venueId" />
         <result column="event_start_date" property="eventStartDate" />
         <result column="event_end_date" property="eventEndDate" />
         <result column="description" property="description" />

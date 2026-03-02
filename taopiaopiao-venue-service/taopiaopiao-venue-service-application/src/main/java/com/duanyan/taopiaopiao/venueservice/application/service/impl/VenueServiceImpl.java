@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.common.exception.BusinessException;
-import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueCreateRequest;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenuePageResponse;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueQueryRequest;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueResponse;
 import com.duanyan.taopiaopiao.venueservice.api.dto.VenueUpdateRequest;
-import com.duanyan.taopiaopiao.venueservice.application.client.EventClient;
 import com.duanyan.taopiaopiao.venueservice.application.mapper.VenueMapper;
 import com.duanyan.taopiaopiao.venueservice.application.service.VenueService;
 import com.duanyan.taopiaopiao.venueservice.domain.entity.Venue;
@@ -40,7 +38,6 @@ public class VenueServiceImpl implements VenueService {
 
     private final VenueMapper venueMapper;
     private final ObjectMapper objectMapper;
-    private final EventClient eventClient;
 
     @Override
     public List<VenueResponse> getAllVenues() {
@@ -189,12 +186,6 @@ public class VenueServiceImpl implements VenueService {
         Venue venue = venueMapper.selectById(id);
         if (venue == null) {
             throw new BusinessException(404, "场馆不存在");
-        }
-
-        // 检查是否有非已售完状态的演出绑定
-        Result<Boolean> result = eventClient.hasActiveEvents(id);
-        if (result != null && result.isSuccess() && Boolean.TRUE.equals(result.getData())) {
-            throw new BusinessException(400, "该场馆存在演出绑定，无法删除");
         }
 
         // 删除

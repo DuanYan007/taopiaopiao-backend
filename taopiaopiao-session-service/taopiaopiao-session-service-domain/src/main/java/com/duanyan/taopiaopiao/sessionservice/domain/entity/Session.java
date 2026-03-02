@@ -42,11 +42,6 @@ public class Session {
     private LocalDateTime endTime;
 
     /**
-     * 场馆ID
-     */
-    private Long venueId;
-
-    /**
      * 详细地址
      */
     private String address;

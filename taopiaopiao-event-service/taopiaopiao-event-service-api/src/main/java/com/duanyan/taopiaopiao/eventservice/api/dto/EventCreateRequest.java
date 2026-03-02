@@ -35,10 +35,6 @@ public class EventCreateRequest {
     @Schema(description = "城市", example = "上海", requiredMode = Schema.RequiredMode.REQUIRED)
     private String city;
 
-    @NotNull(message = "场馆ID不能为空")
-    @Schema(description = "默认场馆ID", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long venueId;
-
     @Schema(description = "副标题", example = "嘉年华世界巡回演唱会")
     private String subtitle;
 
@@ -67,9 +63,6 @@ public class EventCreateRequest {
     @Schema(description = "演出简介")
     private String description;
 
-    @Schema(description = "票档列表")
-    private List<TicketTierDTO> ticketTiers;
-
     @Schema(description = "温馨提示", example = "儿童入场提示")
     private String tips;
 
@@ -81,26 +74,4 @@ public class EventCreateRequest {
 
     @Schema(description = "标签数组", example = "[\"recommended\", \"hot\"]")
     private List<String> tags;
-
-    /**
-     * 票档DTO
-     */
-    @Data
-    @Schema(description = "票档信息")
-    public static class TicketTierDTO {
-        @Schema(description = "票档名称", example = "VIP")
-        private String name;
-
-        @Schema(description = "价格", example = "2580")
-        private Integer price;
-
-        @Schema(description = "座位颜色（十六进制）", example = "#FF5722")
-        private String color;
-
-        @Schema(description = "每人限购数量", example = "4")
-        private Integer maxPurchase;
-
-        @Schema(description = "票档说明", example = "含周边礼包")
-        private String description;
-    }
 }

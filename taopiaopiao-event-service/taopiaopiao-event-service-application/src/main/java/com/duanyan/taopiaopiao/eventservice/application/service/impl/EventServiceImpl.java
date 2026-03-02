@@ -10,10 +10,8 @@ import com.duanyan.taopiaopiao.eventservice.api.dto.EventQueryRequest;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventResponse;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventUpdateRequest;
 import com.duanyan.taopiaopiao.eventservice.application.mapper.EventMapper;
-import com.duanyan.taopiaopiao.eventservice.application.mapper.TicketTierMapper;
 import com.duanyan.taopiaopiao.eventservice.application.service.EventService;
 import com.duanyan.taopiaopiao.eventservice.domain.entity.Event;
-import com.duanyan.taopiaopiao.eventservice.domain.entity.TicketTier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +41,6 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
 
     private final EventMapper eventMapper;
-    private final TicketTierMapper ticketTierMapper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -108,7 +105,7 @@ public class EventServiceImpl implements EventService {
     public Long createEvent(EventCreateRequest request) {
         // 转换为实体（排除需要特殊处理的字段）
         Event event = new Event();
-        BeanUtils.copyProperties(request, event, "images", "tags", "ticketTiers", "tips", "refundPolicy", "duration");
+        BeanUtils.copyProperties(request, event, "images", "tags", "tips", "refundPolicy", "duration");
 
         // 处理图片URL（逗号分隔的字符串转为JSON数组）
         if (StringUtils.hasText(request.getImages())) {
@@ -154,10 +151,7 @@ public class EventServiceImpl implements EventService {
         // 保存演出
         eventMapper.insert(event);
 
-        // 保存票档
-        if (request.getTicketTiers() != null && !request.getTicketTiers().isEmpty()) {
-            saveTicketTiers(event.getId(), request.getTicketTiers());
-        }
+        // TODO: 票档信息将直接与座位模板绑定，不再独立存储
 
         return event.getId();
     }
@@ -172,7 +166,7 @@ public class EventServiceImpl implements EventService {
         }
 
         // 更新字段（排除需要特殊处理的字段）
-        BeanUtils.copyProperties(request, existingEvent, "images", "tags", "ticketTiers", "tips", "refundPolicy", "duration");
+        BeanUtils.copyProperties(request, existingEvent, "images", "tags", "tips", "refundPolicy", "duration");
 
         // 处理图片URL
         if (StringUtils.hasText(request.getImages())) {
@@ -221,15 +215,7 @@ public class EventServiceImpl implements EventService {
         // 保存更新演出
         eventMapper.updateById(existingEvent);
 
-        // 更新票档（删除旧票档，创建新票档）
-        if (request.getTicketTiers() != null) {
-            LambdaQueryWrapper<TicketTier> deleteWrapper = new LambdaQueryWrapper<>();
-            deleteWrapper.eq(TicketTier::getEventId, id);
-            ticketTierMapper.delete(deleteWrapper);
-            if (!request.getTicketTiers().isEmpty()) {
-                saveTicketTiers(id, request.getTicketTiers());
-            }
-        }
+        // TODO: 票档信息将直接与座位模板绑定，不再独立存储
     }
 
     @Override
@@ -239,11 +225,6 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new BusinessException(404, "演出不存在");
         }
-
-        // 删除票档
-        LambdaQueryWrapper<TicketTier> deleteWrapper = new LambdaQueryWrapper<>();
-        deleteWrapper.eq(TicketTier::getEventId, id);
-        ticketTierMapper.delete(deleteWrapper);
 
         // 删除演出
         eventMapper.deleteById(id);
@@ -270,24 +251,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public BigDecimal getMinPrice(Long eventId) {
-        LambdaQueryWrapper<TicketTier> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TicketTier::getEventId, eventId);
-        queryWrapper.eq(TicketTier::getIsActive, true);
-        queryWrapper.orderByAsc(TicketTier::getPrice);
-        queryWrapper.last("LIMIT 1");
-
-        TicketTier tier = ticketTierMapper.selectOne(queryWrapper);
-        return tier != null ? tier.getPrice() : BigDecimal.ZERO;
-    }
-
-    @Override
-    public boolean hasActiveEventsByVenueId(Long venueId) {
-        LambdaQueryWrapper<Event> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Event::getVenueId, venueId);
-        queryWrapper.ne(Event::getStatus, "sold_out");
-
-        Long count = eventMapper.selectCount(queryWrapper);
-        return count != null && count > 0;
+        // TODO: 票档信息将与座位模板绑定，需要从座位模板服务获取最低价格
+        return BigDecimal.ZERO;
     }
 
     /**
@@ -336,52 +301,8 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        // 查询并设置票档列表
-        if (event.getId() != null) {
-            LambdaQueryWrapper<TicketTier> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(TicketTier::getEventId, event.getId());
-            queryWrapper.orderByAsc(TicketTier::getSortOrder);
-            List<TicketTier> ticketTiers = ticketTierMapper.selectList(queryWrapper);
-            response.setTicketTiers(convertToTicketTierDTOList(ticketTiers));
-        }
+        // TODO: 票档列表将从座位模板服务获取
 
         return response;
-    }
-
-    /**
-     * 保存票档列表
-     */
-    private void saveTicketTiers(Long eventId, List<EventCreateRequest.TicketTierDTO> ticketTierDTOs) {
-        for (int i = 0; i < ticketTierDTOs.size(); i++) {
-            EventCreateRequest.TicketTierDTO dto = ticketTierDTOs.get(i);
-
-            TicketTier ticketTier = new TicketTier();
-            ticketTier.setEventId(eventId);
-            ticketTier.setName(dto.getName());
-            ticketTier.setPrice(new BigDecimal(dto.getPrice().toString()));
-            ticketTier.setColor(dto.getColor());
-            ticketTier.setDescription(dto.getDescription());
-            ticketTier.setMaxPurchase(dto.getMaxPurchase());
-            ticketTier.setSortOrder(i);
-            ticketTier.setIsActive(true);
-
-            ticketTierMapper.insert(ticketTier);
-        }
-    }
-
-    /**
-     * 转换票档实体列表为DTO列表
-     */
-    private List<EventResponse.TicketTierDTO> convertToTicketTierDTOList(List<TicketTier> ticketTiers) {
-        return ticketTiers.stream()
-                .map(tier -> EventResponse.TicketTierDTO.builder()
-                        .id(tier.getId())
-                        .name(tier.getName())
-                        .price(tier.getPrice().intValue())
-                        .color(tier.getColor())
-                        .maxPurchase(tier.getMaxPurchase())
-                        .description(tier.getDescription())
-                        .build())
-                .collect(Collectors.toList());
     }
 }

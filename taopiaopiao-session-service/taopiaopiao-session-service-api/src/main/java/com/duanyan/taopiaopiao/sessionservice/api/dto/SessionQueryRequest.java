@@ -25,9 +25,6 @@ public class SessionQueryRequest {
     @Schema(description = "演出ID", example = "18")
     private Long eventId;
 
-    @Schema(description = "场馆ID", example = "2")
-    private Long venueId;
-
     @Schema(description = "状态", example = "on_sale")
     private String status;
 

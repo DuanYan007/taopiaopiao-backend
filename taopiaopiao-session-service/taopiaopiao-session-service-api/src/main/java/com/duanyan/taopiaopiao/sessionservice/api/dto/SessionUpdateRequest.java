@@ -44,10 +44,6 @@ public class SessionUpdateRequest {
     @Schema(description = "结束时间", example = "2025-03-15T22:30:00", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime endTime;
 
-    @NotNull(message = "场馆ID不能为空")
-    @Schema(description = "场馆ID", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long venueId;
-
     @Schema(description = "详细地址")
     private String address;
 

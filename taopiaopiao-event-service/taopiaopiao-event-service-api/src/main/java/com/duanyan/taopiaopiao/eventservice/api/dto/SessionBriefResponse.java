@@ -40,20 +40,14 @@ public class SessionBriefResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
-    @Schema(description = "场馆ID")
-    private Long venueId;
-
-    @Schema(description = "场馆名称")
-    private String venueName;
+    @Schema(description = "座位模板ID")
+    private Long seatTemplateId;
 
     @Schema(description = "馆厅名称")
     private String hallName;
 
     @Schema(description = "详细地址")
     private String address;
-
-    @Schema(description = "总座位数")
-    private Integer totalSeats;
 
     @Schema(description = "可售座位数")
     private Integer availableSeats;
@@ -67,9 +61,6 @@ public class SessionBriefResponse {
     @Schema(description = "状态")
     private String status;
 
-    @Schema(description = "票档列表")
-    private List<TicketTierInfo> ticketTiers;
-
     @Schema(description = "扩展配置")
     private SessionMetadata metadata;
 
@@ -80,40 +71,6 @@ public class SessionBriefResponse {
     @Schema(description = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
-
-    /**
-     * 票档信息
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "票档信息")
-    public static class TicketTierInfo {
-        @Schema(description = "票档ID")
-        private Long id;
-
-        @Schema(description = "票档名称")
-        private String name;
-
-        @Schema(description = "价格")
-        private Integer price;
-
-        @Schema(description = "座位颜色")
-        private String color;
-
-        @Schema(description = "该场次分配的座位数")
-        private Integer seatCount;
-
-        @Schema(description = "该场次可售座位数")
-        private Integer availableSeats;
-
-        @Schema(description = "限购数")
-        private Integer maxPurchase;
-
-        @Schema(description = "是否启用")
-        private Boolean enabled;
-    }
 
     /**
      * 场次扩展配置

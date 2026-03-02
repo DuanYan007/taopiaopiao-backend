@@ -35,10 +35,6 @@ public class EventUpdateRequest {
     @Schema(description = "城市", example = "上海", requiredMode = Schema.RequiredMode.REQUIRED)
     private String city;
 
-    @NotNull(message = "场馆ID不能为空")
-    @Schema(description = "默认场馆ID", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Long venueId;
-
     @Schema(description = "副标题")
     private String subtitle;
 
@@ -66,9 +62,6 @@ public class EventUpdateRequest {
 
     @Schema(description = "演出简介")
     private String description;
-
-    @Schema(description = "票档列表")
-    private List<EventCreateRequest.TicketTierDTO> ticketTiers;
 
     @Schema(description = "温馨提示")
     private String tips;

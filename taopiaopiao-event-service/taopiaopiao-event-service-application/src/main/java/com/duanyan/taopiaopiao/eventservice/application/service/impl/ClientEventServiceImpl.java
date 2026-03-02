@@ -113,7 +113,7 @@ public class ClientEventServiceImpl implements ClientEventService {
 
         try {
             // 调用场次服务获取数据
-            Result<Object> response = sessionClient.getSessionPage(null, eventId, null, status, page, pageSize);
+            Result<Object> response = sessionClient.getSessionPage(null, eventId, status, page, pageSize);
             if (response != null && response.getData() != null) {
                 // 将返回的Object转换为SessionBriefPageResponse
                 return objectMapper.convertValue(response.getData(), new TypeReference<SessionBriefPageResponse>() {});

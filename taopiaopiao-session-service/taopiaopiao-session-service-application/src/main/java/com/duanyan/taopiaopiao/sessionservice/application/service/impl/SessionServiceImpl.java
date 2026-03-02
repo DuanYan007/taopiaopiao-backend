@@ -12,11 +12,9 @@ import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionUpdateRequest;
 import com.duanyan.taopiaopiao.sessionservice.application.client.EventClient;
-import com.duanyan.taopiaopiao.sessionservice.application.client.VenueClient;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.service.SessionService;
 import com.duanyan.taopiaopiao.sessionservice.domain.entity.Session;
-import com.duanyan.taopiaopiao.venueservice.api.dto.VenueResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +43,6 @@ public class SessionServiceImpl implements SessionService {
 
     private final SessionMapper sessionMapper;
     private final ObjectMapper objectMapper;
-    private final VenueClient venueClient;
     private final EventClient eventClient;
 
     @Override
@@ -63,11 +60,6 @@ public class SessionServiceImpl implements SessionService {
             queryWrapper.eq(Session::getEventId, request.getEventId());
         }
 
-        // 场馆筛选
-        if (request.getVenueId() != null) {
-            queryWrapper.eq(Session::getVenueId, request.getVenueId());
-        }
-
         // 状态筛选
         if (StringUtils.hasText(request.getStatus())) {
             queryWrapper.eq(Session::getStatus, request.getStatus());
@@ -80,12 +72,7 @@ public class SessionServiceImpl implements SessionService {
         Page<Session> page = new Page<>(request.getPage(), request.getPageSize());
         IPage<Session> sessionPage = sessionMapper.selectPage(page, queryWrapper);
 
-        // 收集需要查询的 venueId 和 eventId
-        List<Long> venueIds = sessionPage.getRecords().stream()
-                .map(Session::getVenueId)
-                .filter(id -> id != null)
-                .distinct()
-                .toList();
+        // 收集需要查询的 eventId
         List<Long> eventIds = sessionPage.getRecords().stream()
                 .map(Session::getEventId)
                 .filter(id -> id != null)
@@ -93,12 +80,11 @@ public class SessionServiceImpl implements SessionService {
                 .toList();
 
         // 批量查询关联信息
-        Map<Long, VenueResponse> venueMap = fetchVenuesByIds(venueIds);
         Map<Long, EventResponse> eventMap = fetchEventsByIds(eventIds);
 
         // 转换为DTO并填充关联信息
         List<SessionResponse> sessionResponseList = sessionPage.getRecords().stream()
-                .map(session -> convertToResponse(session, venueMap, eventMap))
+                .map(session -> convertToResponse(session, eventMap))
                 .collect(Collectors.toList());
 
         // 计算总页数
@@ -120,11 +106,10 @@ public class SessionServiceImpl implements SessionService {
             throw new BusinessException(404, "场次不存在");
         }
 
-        // 查询关联的场馆和演出信息
-        Map<Long, VenueResponse> venueMap = fetchVenuesByIds(List.of(session.getVenueId()));
+        // 查询关联的演出信息
         Map<Long, EventResponse> eventMap = fetchEventsByIds(List.of(session.getEventId()));
 
-        return convertToResponse(session, venueMap, eventMap);
+        return convertToResponse(session, eventMap);
     }
 
     @Override
@@ -229,7 +214,6 @@ public class SessionServiceImpl implements SessionService {
      * 转换为响应DTO（带关联信息）
      */
     private SessionResponse convertToResponse(Session session,
-                                               Map<Long, VenueResponse> venueMap,
                                                Map<Long, EventResponse> eventMap) {
         SessionResponse response = new SessionResponse();
         BeanUtils.copyProperties(session, response);
@@ -239,14 +223,6 @@ public class SessionServiceImpl implements SessionService {
             EventResponse event = eventMap.get(session.getEventId());
             if (event != null) {
                 response.setEventName(event.getName());
-            }
-        }
-
-        // 填充场馆名称
-        if (session.getVenueId() != null && venueMap != null) {
-            VenueResponse venue = venueMap.get(session.getVenueId());
-            if (venue != null) {
-                response.setVenueName(venue.getName());
             }
         }
 
@@ -262,8 +238,7 @@ public class SessionServiceImpl implements SessionService {
             }
         }
 
-        // TODO: 从座位模板获取 hallName, totalSeats, ticketTiers
-        // 通过 seatTemplateId 调用座位模板服务获取
+        // TODO: 从座位模板获取 hallName, totalSeats
 
         return response;
     }
@@ -272,32 +247,7 @@ public class SessionServiceImpl implements SessionService {
      * 转换为响应DTO（无关联信息，兼容其他调用）
      */
     private SessionResponse convertToResponse(Session session) {
-        return convertToResponse(session, null, null);
-    }
-
-    /**
-     * 批量获取场馆信息
-     */
-    private Map<Long, VenueResponse> fetchVenuesByIds(List<Long> venueIds) {
-        if (venueIds == null || venueIds.isEmpty()) {
-            return Map.of();
-        }
-
-        Map<Long, VenueResponse> result = new HashMap<>();
-        for (Long id : venueIds) {
-            try {
-                // 调用 Feign Client，返回 Result<VenueResponse>
-                Result<VenueResponse> resp = venueClient.getVenueById(id);
-                // 由于 V 泛型固定，直接使用 resp.getData()
-                VenueResponse venueResp = resp.getData();
-                if (venueResp != null) {
-                    result.put(id, venueResp);
-                }
-            } catch (Exception e) {
-                log.error("查询场馆信息失败, venueId: {}, error: {}", id, e.getMessage());
-            }
-        }
-        return result;
+        return convertToResponse(session, null);
     }
 
     /**

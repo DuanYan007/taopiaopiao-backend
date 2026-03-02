@@ -8,16 +8,12 @@
         <result column="session_name" property="sessionName" />
         <result column="start_time" property="startTime" />
         <result column="end_time" property="endTime" />
-        <result column="venue_id" property="venueId" />
-        <result column="hall_name" property="hallName" />
         <result column="address" property="address" />
-        <result column="total_seats" property="totalSeats" />
         <result column="available_seats" property="availableSeats" />
         <result column="sold_seats" property="soldSeats" />
         <result column="locked_seats" property="lockedSeats" />
         <result column="status" property="status" />
-        <result column="seat_map_config" property="seatMapConfig" />
-        <result column="ticket_tier_config" property="ticketTierConfig" />
+        <result column="seat_template_id" property="seatTemplateId" />
         <result column="metadata" property="metadata" />
         <result column="created_at" property="createdAt" />
         <result column="updated_at" property="updatedAt" />

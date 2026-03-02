@@ -24,7 +24,6 @@ public interface SessionClient {
     Result<Object> getSessionPage(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long eventId,
-            @RequestParam(required = false) Long venueId,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize);

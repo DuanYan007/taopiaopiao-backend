@@ -39,9 +39,6 @@ public class EventResponse {
     @Schema(description = "城市")
     private String city;
 
-    @Schema(description = "场馆ID")
-    private Long venueId;
-
     @Schema(description = "副标题")
     private String subtitle;
 
@@ -85,9 +82,6 @@ public class EventResponse {
     @Schema(description = "退换票政策")
     private String refundPolicy;
 
-    @Schema(description = "票档列表")
-    private List<TicketTierDTO> ticketTiers;
-
     @Schema(description = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -95,32 +89,4 @@ public class EventResponse {
     @Schema(description = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
-
-    /**
-     * 票档DTO
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "票档信息")
-    public static class TicketTierDTO {
-        @Schema(description = "票档ID")
-        private Long id;
-
-        @Schema(description = "票档名称")
-        private String name;
-
-        @Schema(description = "价格")
-        private Integer price;
-
-        @Schema(description = "座位颜色（十六进制）")
-        private String color;
-
-        @Schema(description = "每人限购数量")
-        private Integer maxPurchase;
-
-        @Schema(description = "票档说明")
-        private String description;
-    }
 }

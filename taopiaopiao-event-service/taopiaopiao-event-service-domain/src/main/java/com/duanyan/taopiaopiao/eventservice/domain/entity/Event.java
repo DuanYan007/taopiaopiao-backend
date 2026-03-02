@@ -43,11 +43,6 @@ public class Event {
     private String city;
 
     /**
-     * 默认场馆ID
-     */
-    private Long venueId;
-
-    /**
      * 演出开始日期
      */
     private LocalDate eventStartDate;
