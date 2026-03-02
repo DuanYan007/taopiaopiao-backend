@@ -28,6 +28,16 @@ public class Seat {
     private Long sessionId;
 
     /**
+     * 座位模板ID
+     */
+    private Long seatTemplateId;
+
+    /**
+     * 模板中的座位ID
+     */
+    private String templateSeatId;
+
+    /**
      * 票档ID
      */
     private Long ticketTierId;

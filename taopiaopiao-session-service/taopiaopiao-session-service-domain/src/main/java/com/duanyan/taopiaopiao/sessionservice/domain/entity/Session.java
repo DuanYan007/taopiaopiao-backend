@@ -47,19 +47,9 @@ public class Session {
     private Long venueId;
 
     /**
-     * 馆厅名称
-     */
-    private String hallName;
-
-    /**
      * 详细地址
      */
     private String address;
-
-    /**
-     * 总座位数
-     */
-    private Integer totalSeats;
 
     /**
      * 可售座位数
@@ -82,14 +72,9 @@ public class Session {
     private String status;
 
     /**
-     * 座位图配置(JSON)
+     * 座位模板ID
      */
-    private String seatMapConfig;
-
-    /**
-     * 票档配置(JSON)
-     */
-    private String ticketTierConfig;
+    private Long seatTemplateId;
 
     /**
      * 扩展字段(JSON)
