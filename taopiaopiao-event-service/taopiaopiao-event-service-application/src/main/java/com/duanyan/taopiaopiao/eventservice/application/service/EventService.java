@@ -77,4 +77,12 @@ public interface EventService {
      * @return 演出响应DTO
      */
     EventResponse convertToResponse(Event event);
+
+    /**
+     * 检查场馆是否有非已售完状态的演出（用于场馆服务调用）
+     *
+     * @param venueId 场馆ID
+     * @return true-有绑定演出，false-无绑定演出
+     */
+    boolean hasActiveEventsByVenueId(Long venueId);
 }

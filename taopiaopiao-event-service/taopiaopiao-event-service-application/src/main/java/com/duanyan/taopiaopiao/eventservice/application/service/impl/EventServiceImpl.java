@@ -280,6 +280,16 @@ public class EventServiceImpl implements EventService {
         return tier != null ? tier.getPrice() : BigDecimal.ZERO;
     }
 
+    @Override
+    public boolean hasActiveEventsByVenueId(Long venueId) {
+        LambdaQueryWrapper<Event> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Event::getVenueId, venueId);
+        queryWrapper.ne(Event::getStatus, "sold_out");
+
+        Long count = eventMapper.selectCount(queryWrapper);
+        return count != null && count > 0;
+    }
+
     /**
      * 转换为响应DTO
      */

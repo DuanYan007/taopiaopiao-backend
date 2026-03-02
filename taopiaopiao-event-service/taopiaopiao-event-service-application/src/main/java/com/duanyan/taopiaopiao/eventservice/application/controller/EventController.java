@@ -112,4 +112,16 @@ public class EventController {
         java.math.BigDecimal price = eventService.getMinPrice(id);
         return Result.success(price);
     }
+
+    /**
+     * 检查场馆是否有非已售完状态的演出（内部接口，供场馆服务调用）
+     */
+    @GetMapping("/internal/has-active-events/{venueId}")
+    @Operation(summary = "检查场馆是否有非已售完状态的演出")
+    public Result<Boolean> hasActiveEvents(
+            @Parameter(description = "场馆ID", required = true)
+            @PathVariable Long venueId) {
+        boolean hasActive = eventService.hasActiveEventsByVenueId(venueId);
+        return Result.success(hasActive);
+    }
 }
