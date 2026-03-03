@@ -46,9 +46,6 @@ public class SessionResponse {
     @Schema(description = "座位模板ID")
     private Long seatTemplateId;
 
-    @Schema(description = "馆厅名称")
-    private String hallName;
-
     @Schema(description = "详细地址")
     private String address;
 

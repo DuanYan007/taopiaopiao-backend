@@ -38,11 +38,6 @@ public class Seat {
     private String templateSeatId;
 
     /**
-     * 票档ID
-     */
-    private Long ticketTierId;
-
-    /**
      * 行号
      */
     private String seatRow;

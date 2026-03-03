@@ -6,14 +6,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.common.exception.BusinessException;
 import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.eventservice.api.dto.EventResponse;
+import com.duanyan.taopiaopiao.seatternplateservice.api.dto.SeatTemplateResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionCreateRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionPageResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionUpdateRequest;
 import com.duanyan.taopiaopiao.sessionservice.application.client.EventClient;
+import com.duanyan.taopiaopiao.sessionservice.application.client.SeatTemplateClient;
+import com.duanyan.taopiaopiao.sessionservice.application.mapper.SeatMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.service.SessionService;
+import com.duanyan.taopiaopiao.sessionservice.domain.entity.Seat;
 import com.duanyan.taopiaopiao.sessionservice.domain.entity.Session;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +47,10 @@ import java.util.stream.Collectors;
 public class SessionServiceImpl implements SessionService {
 
     private final SessionMapper sessionMapper;
+    private final SeatMapper seatMapper;
     private final ObjectMapper objectMapper;
     private final EventClient eventClient;
+    private final SeatTemplateClient seatTemplateClient;
 
     @Override
     public SessionPageResponse getSessionPage(SessionQueryRequest request) {
@@ -115,6 +122,17 @@ public class SessionServiceImpl implements SessionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createSession(SessionCreateRequest request) {
+        // 获取座位模板信息
+        if (request.getSeatTemplateId() == null) {
+            throw new BusinessException(400, "座位模板ID不能为空");
+        }
+
+        Result<SeatTemplateResponse> templateResult = seatTemplateClient.getTemplateById(request.getSeatTemplateId());
+        if (templateResult == null || templateResult.getData() == null) {
+            throw new BusinessException(404, "座位模板不存在");
+        }
+        SeatTemplateResponse template = templateResult.getData();
+
         // 转换为实体
         Session session = new Session();
         BeanUtils.copyProperties(request, session, "metadata");
@@ -132,13 +150,14 @@ public class SessionServiceImpl implements SessionService {
         // 初始化座位数
         session.setSoldSeats(0);
         session.setLockedSeats(0);
-        // 从座位模板获取可售座位数（TODO: 调用座位模板服务获取）
-        session.setAvailableSeats(0);
+        // 从座位模板获取总座位数作为可售座位数
+        session.setAvailableSeats(template.getTotalSeats());
 
         // 保存场次
         sessionMapper.insert(session);
 
-        // TODO: 根据座位模板生成具体座位记录
+        // 根据座位模板生成具体座位记录
+        generateSeatsFromTemplate(session.getId(), template);
 
         return session.getId();
     }
@@ -238,8 +257,6 @@ public class SessionServiceImpl implements SessionService {
             }
         }
 
-        // TODO: 从座位模板获取 hallName, totalSeats
-
         return response;
     }
 
@@ -273,5 +290,91 @@ public class SessionServiceImpl implements SessionService {
             }
         }
         return result;
+    }
+
+    /**
+     * 根据座位模板生成具体座位记录
+     *
+     * @param sessionId 场次ID
+     * @param template 座位模板
+     */
+    private void generateSeatsFromTemplate(Long sessionId, SeatTemplateResponse template) {
+        try {
+            // 解析layoutData
+            if (template.getLayoutData() == null || template.getLayoutData().isEmpty()) {
+                log.warn("座位模板{}的layoutData为空，跳过座位生成", template.getId());
+                return;
+            }
+
+            // 解析JSON格式的layoutData
+            Map<String, Object> layoutData = objectMapper.readValue(template.getLayoutData(), new TypeReference<Map<String, Object>>() {});
+            List<Map<String, Object>> areas = (List<Map<String, Object>>) layoutData.get("areas");
+
+            if (areas == null || areas.isEmpty()) {
+                log.warn("座位模板{}的areas为空，跳过座位生成", template.getId());
+                return;
+            }
+
+            List<Seat> seatsToInsert = new ArrayList<>();
+
+            // 遍历所有区域
+            for (Map<String, Object> area : areas) {
+                String areaCode = (String) area.get("areaCode");
+                String areaName = (String) area.get("areaName");
+                Object priceObj = area.get("price");
+                BigDecimal areaPrice = priceObj != null ? new BigDecimal(priceObj.toString()) : BigDecimal.ZERO;
+
+                List<Map<String, Object>> rows = (List<Map<String, Object>>) area.get("rows");
+                if (rows == null) continue;
+
+                // 遍历所有行
+                for (Map<String, Object> row : rows) {
+                    Integer rowNum = (Integer) row.get("rowNum");
+                    String rowLabel = (String) row.get("rowLabel");
+                    Integer startSeat = (Integer) row.get("startSeat");
+                    Integer endSeat = (Integer) row.get("endSeat");
+
+                    // 为每个座位创建记录
+                    for (int seatNum = startSeat; seatNum <= endSeat; seatNum++) {
+                        Seat seat = new Seat();
+                        seat.setSessionId(sessionId);
+                        seat.setSeatTemplateId(template.getId());
+
+                        // 生成模板座位ID：区域-行-座 (如 A-1-01)
+                        String templateSeatId = String.format("%s-%d-%02d", areaCode, rowNum, seatNum);
+                        seat.setTemplateSeatId(templateSeatId);
+
+                        // 座位编号：行标签+座号 (如 1排01座)
+                        seat.setSeatNumber(String.format("%s%02d座", rowLabel, seatNum));
+
+                        seat.setSeatRow(rowLabel);
+                        seat.setSeatColumn(String.format("%02d", seatNum));
+                        seat.setArea(areaName);
+                        seat.setPrice(areaPrice);
+                        seat.setStatus("available"); // 初始状态为可售
+
+                        seatsToInsert.add(seat);
+                    }
+                }
+            }
+
+            // 批量插入座位
+            if (!seatsToInsert.isEmpty()) {
+                // 使用批量插入，每批最多1000条
+                int batchSize = 1000;
+                for (int i = 0; i < seatsToInsert.size(); i += batchSize) {
+                    int end = Math.min(i + batchSize, seatsToInsert.size());
+                    List<Seat> batch = seatsToInsert.subList(i, end);
+                    for (Seat seat : batch) {
+                        seatMapper.insert(seat);
+                    }
+                }
+                log.info("场次{}生成座位记录{}条", sessionId, seatsToInsert.size());
+            }
+
+        } catch (Exception e) {
+            log.error("生成座位记录失败, sessionId: {}, error: {}", sessionId, e.getMessage(), e);
+            throw new BusinessException(500, "生成座位记录失败: " + e.getMessage());
+        }
     }
 }

@@ -32,11 +32,6 @@ public class SeatTemplate {
     private Long venueId;
 
     /**
-     * 馆厅名称
-     */
-    private String hallName;
-
-    /**
      * 模板编码(唯一标识)
      */
     private String templateCode;

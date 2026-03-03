@@ -61,6 +61,10 @@
             <groupId>com.duanyan</groupId>
             <artifactId>taopiaopiao-event-service-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-seat-template-service-api</artifactId>
+        </dependency>
 
         <!-- MyBatis-Plus -->
         <dependency>
