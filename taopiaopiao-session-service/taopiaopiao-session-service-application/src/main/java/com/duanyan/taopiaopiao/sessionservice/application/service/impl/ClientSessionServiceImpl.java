@@ -4,11 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.common.exception.BusinessException;
-import com.duanyan.taopiaopiao.eventservice.api.dto.EventResponse;
+import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionPageResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
 import com.duanyan.taopiaopiao.sessionservice.application.client.EventClient;
+import com.duanyan.taopiaopiao.sessionservice.application.client.dto.EventDTO;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.service.ClientSessionService;
 import com.duanyan.taopiaopiao.sessionservice.domain.entity.Session;
@@ -75,7 +76,7 @@ public class ClientSessionServiceImpl implements ClientSessionService {
                 .toList();
 
         // 批量查询关联信息
-        Map<Long, EventResponse> eventMap = fetchEventsByIds(eventIds);
+        Map<Long, EventDTO> eventMap = fetchEventsByIds(eventIds);
 
         // 转换为DTO并填充关联信息
         List<SessionResponse> sessionResponseList = sessionPage.getRecords().stream()
@@ -107,7 +108,7 @@ public class ClientSessionServiceImpl implements ClientSessionService {
         }
 
         // 查询关联的演出信息
-        Map<Long, EventResponse> eventMap = fetchEventsByIds(List.of(session.getEventId()));
+        Map<Long, EventDTO> eventMap = fetchEventsByIds(List.of(session.getEventId()));
 
         return convertToResponse(session, eventMap);
     }
@@ -115,15 +116,15 @@ public class ClientSessionServiceImpl implements ClientSessionService {
     /**
      * 批量获取演出信息
      */
-    private Map<Long, EventResponse> fetchEventsByIds(List<Long> eventIds) {
+    private Map<Long, EventDTO> fetchEventsByIds(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return Map.of();
         }
 
-        Map<Long, EventResponse> result = new HashMap<>();
+        Map<Long, EventDTO> result = new HashMap<>();
         for (Long id : eventIds) {
             try {
-                var resp = eventClient.getEventById(id);
+                Result<EventDTO> resp = eventClient.getEventById(id);
                 if (resp != null && resp.getData() != null) {
                     result.put(id, resp.getData());
                 }
@@ -138,7 +139,7 @@ public class ClientSessionServiceImpl implements ClientSessionService {
      * 转换为响应DTO（带关联信息）
      */
     private SessionResponse convertToResponse(Session session,
-                                               Map<Long, EventResponse> eventMap) {
+                                               Map<Long, EventDTO> eventMap) {
         // 直接复用管理端服务的查询方法
         return sessionService.getSessionById(session.getId());
     }

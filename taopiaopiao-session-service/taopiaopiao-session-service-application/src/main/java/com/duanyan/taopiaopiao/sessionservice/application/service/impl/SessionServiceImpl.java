@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.common.exception.BusinessException;
 import com.duanyan.taopiaopiao.common.response.Result;
-import com.duanyan.taopiaopiao.eventservice.api.dto.EventResponse;
-import com.duanyan.taopiaopiao.seatternplateservice.api.dto.SeatTemplateResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionCreateRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionPageResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
@@ -14,6 +12,8 @@ import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionUpdateRequest;
 import com.duanyan.taopiaopiao.sessionservice.application.client.EventClient;
 import com.duanyan.taopiaopiao.sessionservice.application.client.SeatTemplateClient;
+import com.duanyan.taopiaopiao.sessionservice.application.client.dto.EventDTO;
+import com.duanyan.taopiaopiao.sessionservice.application.client.dto.SeatTemplateDTO;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SeatMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.service.SessionService;
@@ -87,7 +87,7 @@ public class SessionServiceImpl implements SessionService {
                 .toList();
 
         // 批量查询关联信息
-        Map<Long, EventResponse> eventMap = fetchEventsByIds(eventIds);
+        Map<Long, EventDTO> eventMap = fetchEventsByIds(eventIds);
 
         // 转换为DTO并填充关联信息
         List<SessionResponse> sessionResponseList = sessionPage.getRecords().stream()
@@ -114,7 +114,7 @@ public class SessionServiceImpl implements SessionService {
         }
 
         // 查询关联的演出信息
-        Map<Long, EventResponse> eventMap = fetchEventsByIds(List.of(session.getEventId()));
+        Map<Long, EventDTO> eventMap = fetchEventsByIds(List.of(session.getEventId()));
 
         return convertToResponse(session, eventMap);
     }
@@ -127,11 +127,11 @@ public class SessionServiceImpl implements SessionService {
             throw new BusinessException(400, "座位模板ID不能为空");
         }
 
-        Result<SeatTemplateResponse> templateResult = seatTemplateClient.getTemplateById(request.getSeatTemplateId());
+        Result<SeatTemplateDTO> templateResult = seatTemplateClient.getTemplateById(request.getSeatTemplateId());
         if (templateResult == null || templateResult.getData() == null) {
             throw new BusinessException(404, "座位模板不存在");
         }
-        SeatTemplateResponse template = templateResult.getData();
+        SeatTemplateDTO template = templateResult.getData();
 
         // 转换为实体
         Session session = new Session();
@@ -233,13 +233,13 @@ public class SessionServiceImpl implements SessionService {
      * 转换为响应DTO（带关联信息）
      */
     private SessionResponse convertToResponse(Session session,
-                                               Map<Long, EventResponse> eventMap) {
+                                               Map<Long, EventDTO> eventMap) {
         SessionResponse response = new SessionResponse();
         BeanUtils.copyProperties(session, response);
 
         // 填充演出名称
         if (session.getEventId() != null && eventMap != null) {
-            EventResponse event = eventMap.get(session.getEventId());
+            EventDTO event = eventMap.get(session.getEventId());
             if (event != null) {
                 response.setEventName(event.getName());
             }
@@ -270,20 +270,18 @@ public class SessionServiceImpl implements SessionService {
     /**
      * 批量获取演出信息
      */
-    private Map<Long, EventResponse> fetchEventsByIds(List<Long> eventIds) {
+    private Map<Long, EventDTO> fetchEventsByIds(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return Map.of();
         }
 
-        Map<Long, EventResponse> result = new HashMap<>();
+        Map<Long, EventDTO> result = new HashMap<>();
         for (Long id : eventIds) {
             try {
-                // 调用 Feign Client，返回 Result<EventResponse>
-                Result<EventResponse> resp = eventClient.getEventById(id);
-                // 由于 V 泛型固定，直接使用 resp.getData()
-                EventResponse eventResp = resp.getData();
-                if (eventResp != null) {
-                    result.put(id, eventResp);
+                // 调用 Feign Client
+                Result<EventDTO> resp = eventClient.getEventById(id);
+                if (resp != null && resp.getData() != null) {
+                    result.put(id, resp.getData());
                 }
             } catch (Exception e) {
                 log.error("查询演出信息失败, eventId: {}, error: {}", id, e.getMessage());
@@ -298,7 +296,7 @@ public class SessionServiceImpl implements SessionService {
      * @param sessionId 场次ID
      * @param template 座位模板
      */
-    private void generateSeatsFromTemplate(Long sessionId, SeatTemplateResponse template) {
+    private void generateSeatsFromTemplate(Long sessionId, SeatTemplateDTO template) {
         try {
             // 解析layoutData
             if (template.getLayoutData() == null || template.getLayoutData().isEmpty()) {

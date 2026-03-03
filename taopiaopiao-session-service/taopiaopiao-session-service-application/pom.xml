@@ -57,14 +57,7 @@
         </dependency>
 
         <!-- 依赖其他服务的 API 模块 -->
-        <dependency>
-            <groupId>com.duanyan</groupId>
-            <artifactId>taopiaopiao-event-service-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.duanyan</groupId>
-            <artifactId>taopiaopiao-seat-template-service-api</artifactId>
-        </dependency>
+        <!-- 注意：微服务间不应依赖彼此的API模块，应通过Feign返回Object后自行转换 -->
 
         <!-- MyBatis-Plus -->
         <dependency>
