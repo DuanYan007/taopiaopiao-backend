@@ -25,6 +25,7 @@
         <module>taopiaopiao-common</module>
         <module>taopiaopiao-common-web</module>
         <module>taopiaopiao-common-redis</module>
+        <module>taopiaopiao-common-oss</module>
 
         <!-- 微服务模块 -->
         <module>taopiaopiao-user-service</module>
@@ -97,6 +98,11 @@
             <dependency>
                 <groupId>com.duanyan</groupId>
                 <artifactId>taopiaopiao-common-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.duanyan</groupId>
+                <artifactId>taopiaopiao-common-oss</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
