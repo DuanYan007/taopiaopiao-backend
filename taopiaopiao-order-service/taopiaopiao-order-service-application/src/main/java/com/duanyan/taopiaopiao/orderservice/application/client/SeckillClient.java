@@ -1,6 +1,7 @@
 package com.duanyan.taopiaopiao.orderservice.application.client;
 
 import com.duanyan.taopiaopiao.common.response.Result;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatRequest;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,14 +14,14 @@ import java.util.List;
 /**
  * 秒杀服务客户端
  */
-@FeignClient(name = "seckill-service", path = "/api/seckill")
+@FeignClient(name = "seckill-service", path = "/seckill")
 public interface SeckillClient {
 
     @PostMapping("/lock")
-    LockSeatResponse lockSeats(@RequestBody LockSeatRequest request);
+    Result<LockSeatResponse> lockSeats(@RequestBody LockSeatRequest request);
 
     @PostMapping("/confirm")
-    Result<Boolean> confirmPurchase(@RequestBody LockSeatRequest request);
+    Result<Boolean> confirmPurchase(@RequestBody ConfirmPurchaseRequest request);
 
     @PostMapping("/release")
     Result<Integer> releaseSeats(@RequestParam("sessionId") Long sessionId,

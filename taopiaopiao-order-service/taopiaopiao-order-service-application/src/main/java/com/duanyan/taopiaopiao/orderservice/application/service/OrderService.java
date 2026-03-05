@@ -2,7 +2,6 @@ package com.duanyan.taopiaopiao.orderservice.application.service;
 
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
-import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
 
 /**
  * 订单服务接口
@@ -10,14 +9,9 @@ import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
 public interface OrderService {
 
     /**
-     * 创建订单
+     * 创建订单（支付并创建）
      */
     OrderResponse createOrder(Long userId, CreateOrderRequest request);
-
-    /**
-     * 支付订单
-     */
-    Boolean payOrder(Long userId, PayOrderRequest request);
 
     /**
      * 取消订单

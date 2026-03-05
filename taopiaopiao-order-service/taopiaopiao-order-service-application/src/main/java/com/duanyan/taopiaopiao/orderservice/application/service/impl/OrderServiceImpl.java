@@ -3,9 +3,9 @@ package com.duanyan.taopiaopiao.orderservice.application.service.impl;
 import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
-import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
+import com.duanyan.taopiaopiao.orderservice.api.dto.SeatDetail;
 import com.duanyan.taopiaopiao.orderservice.application.client.SeckillClient;
-import com.duanyan.taopiaopiao.orderservice.application.client.SeatTemplateClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.orderservice.application.client.SessionClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.SessionDTO;
 import com.duanyan.taopiaopiao.orderservice.application.mapper.OrderMapper;
@@ -13,7 +13,6 @@ import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
 import com.duanyan.taopiaopiao.orderservice.domain.entity.Order;
 import com.duanyan.taopiaopiao.orderservice.domain.enums.OrderStatus;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatRequest;
-import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 订单服务实现
@@ -35,55 +35,65 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final SeckillClient seckillClient;
     private final SessionClient sessionClient;
-    private final SeatTemplateClient seatTemplateClient;
-
-    private static final int ORDER_EXPIRE_MINUTES = 15;
 
     @Override
     @Transactional
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
-        // 1. 获取场次信息（包含座位模板ID）
+        // 1. 获取场次信息
         Result<SessionDTO> sessionResult = sessionClient.getSessionById(request.getSessionId());
         if (sessionResult == null || sessionResult.getData() == null) {
             throw new RuntimeException("场次不存在");
         }
         SessionDTO session = sessionResult.getData();
 
-        // 2. 通过座位模板获取价格
-        if (session.getSeatTemplateId() == null) {
-            throw new RuntimeException("场次没有关联座位模板");
-        }
-
-        Result<BigDecimal> priceResult = seatTemplateClient.getMinPrice(session.getSeatTemplateId());
-        if (priceResult == null || !priceResult.isSuccess() || priceResult.getData() == null) {
-            throw new RuntimeException("获取座位价格失败");
-        }
-        BigDecimal unitPrice = priceResult.getData();
-        if (unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("座位价格无效");
-        }
-
-        // 获取eventId（如果需要）
-        Long eventId = session.getEventId();
+        // 2. 确定eventId
+        Long eventId = request.getEventId();
         if (eventId == null) {
-            throw new RuntimeException("场次关联的演出信息不存在");
+            eventId = session.getEventId();
+            if (eventId == null) {
+                throw new RuntimeException("场次关联的演出信息不存在");
+            }
         }
 
-        // 3. 锁定座位
-        LockSeatRequest lockRequest = new LockSeatRequest();
-        lockRequest.setSessionId(request.getSessionId());
-        lockRequest.setUserId(userId);
-        lockRequest.setSeatIds(request.getSeatIds());
-        lockRequest.setExpireSeconds(ORDER_EXPIRE_MINUTES * 60);
-
-        LockSeatResponse lockResponse = seckillClient.lockSeats(lockRequest);
-        if (!lockResponse.getSuccess()) {
-            throw new RuntimeException("锁座失败: " + lockResponse.getMessage());
+        // 3. 校验请求数据
+        if (request.getSeatIds().size() != request.getSeatDetails().size()) {
+            throw new RuntimeException("座位ID列表与座位详情数量不一致");
         }
 
-        // 4. 创建订单
+        // 4. 校验总金额
+        BigDecimal calculatedTotal = request.getSeatDetails().stream()
+                .map(SeatDetail::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (calculatedTotal.compareTo(request.getTotalAmount()) != 0) {
+            throw new RuntimeException("订单总金额与座位详情金额不一致");
+        }
+
+        if (request.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("订单金额必须大于0");
+        }
+
+        // 5. 确认购买（前端已预先锁定座位）
+        ConfirmPurchaseRequest confirmRequest = new ConfirmPurchaseRequest();
+        confirmRequest.setSessionId(request.getSessionId());
+        confirmRequest.setUserId(userId);
+        confirmRequest.setSeatIds(request.getSeatIds());
+
+        Result<Boolean> confirmResult = seckillClient.confirmPurchase(confirmRequest);
+        if (confirmResult == null || !confirmResult.isSuccess() || confirmResult.getData() == null) {
+            String message = (confirmResult != null && confirmResult.getMsg() != null) ? confirmResult.getMsg() : "确认购买失败";
+            throw new RuntimeException("确认购买失败: " + message);
+        }
+
+        // 6. 创建订单（状态直接为已支付）
         String orderNo = generateOrderNo();
-        BigDecimal totalAmount = unitPrice.multiply(BigDecimal.valueOf(request.getSeatIds().size()));
+        BigDecimal totalAmount = request.getTotalAmount();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 计算平均单价（用于记录）
+        BigDecimal unitPrice = totalAmount.divide(
+                BigDecimal.valueOf(request.getSeatIds().size()),
+                2,
+                BigDecimal.ROUND_HALF_UP);
 
         Order order = Order.builder()
                 .orderNo(orderNo)
@@ -94,59 +104,17 @@ public class OrderServiceImpl implements OrderService {
                 .seatCount(request.getSeatIds().size())
                 .unitPrice(unitPrice)
                 .totalAmount(totalAmount)
-                .status(OrderStatus.PENDING.getCode())
-                .expireTime(LocalDateTime.now().plusMinutes(ORDER_EXPIRE_MINUTES))
+                .status(OrderStatus.PAID.getCode())
+                .payTime(now)
+                .expireTime(now)  // 已支付订单的过期时间等于支付时间
                 .build();
 
         orderMapper.insert(order);
 
-        log.info("创建订单成功: orderNo={}, userId={}, amount={}", orderNo, userId, totalAmount);
+        log.info("支付成功，创建订单: orderNo={}, userId={}, amount={}, seats={}",
+                orderNo, userId, totalAmount, request.getSeatIds());
 
         return buildOrderResponse(order);
-    }
-
-    @Override
-    @Transactional
-    public Boolean payOrder(Long userId, PayOrderRequest request) {
-        Order order = orderMapper.selectOne(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order>()
-                        .eq(Order::getOrderNo, request.getOrderNo())
-                        .eq(Order::getUserId, userId)
-        );
-
-        if (order == null) {
-            throw new RuntimeException("订单不存在");
-        }
-
-        if (!OrderStatus.PENDING.getCode().equals(order.getStatus())) {
-            throw new RuntimeException("订单状态不正确");
-        }
-
-        if (LocalDateTime.now().isAfter(order.getExpireTime())) {
-            order.setStatus(OrderStatus.TIMEOUT.getCode());
-            orderMapper.updateById(order);
-            throw new RuntimeException("订单已超时");
-        }
-
-        // 确认购买座位
-        List<String> seatIds = List.of(order.getSeatIds().split(","));
-        LockSeatRequest confirmRequest = new LockSeatRequest();
-        confirmRequest.setSessionId(order.getSessionId());
-        confirmRequest.setUserId(userId);
-        confirmRequest.setSeatIds(seatIds);
-
-        Result<Boolean> result = seckillClient.confirmPurchase(confirmRequest);
-        if (result == null || !result.isSuccess() || result.getData() == null) {
-            throw new RuntimeException("确认购买失败");
-        }
-
-        // 更新订单状态
-        order.setStatus(OrderStatus.PAID.getCode());
-        order.setPayTime(LocalDateTime.now());
-        orderMapper.updateById(order);
-
-        log.info("订单支付成功: orderNo={}, userId={}", request.getOrderNo(), userId);
-        return true;
     }
 
     @Override

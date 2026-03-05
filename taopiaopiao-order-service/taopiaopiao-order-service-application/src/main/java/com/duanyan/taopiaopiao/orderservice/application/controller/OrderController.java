@@ -3,7 +3,6 @@ package com.duanyan.taopiaopiao.orderservice.application.controller;
 import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
-import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,18 +24,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @Operation(summary = "创建订单")
+    @Operation(summary = "创建订单（支付并创建）")
     public Result<OrderResponse> createOrder(@RequestHeader("X-User-Id") Long userId,
                                               @Valid @RequestBody CreateOrderRequest request) {
         OrderResponse response = orderService.createOrder(userId, request);
         return Result.success(response);
-    }
-
-    @PostMapping("/pay")
-    @Operation(summary = "支付订单")
-    public Result<Boolean> payOrder(@RequestHeader("X-User-Id") Long userId,
-                                     @Valid @RequestBody PayOrderRequest request) {
-        return Result.success(orderService.payOrder(userId, request));
     }
 
     @PostMapping("/{orderNo}/cancel")
