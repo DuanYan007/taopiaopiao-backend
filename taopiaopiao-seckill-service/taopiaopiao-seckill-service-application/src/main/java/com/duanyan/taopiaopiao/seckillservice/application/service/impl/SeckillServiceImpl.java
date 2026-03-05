@@ -39,13 +39,12 @@ public class SeckillServiceImpl implements SeckillService {
 
         if (code == 0) {
             for (String seatId : seatIds) {
-                String[] parts = seatId.split(":");
                 SeatLock seatLock = SeatLock.builder()
                         .sessionId(sessionId)
                         .userId(userId)
                         .seatId(seatId)
-                        .seatRow(Integer.parseInt(parts[0]))
-                        .seatCol(Integer.parseInt(parts[1]))
+                        .seatRow(Integer.parseInt(seatId))
+                        .seatCol(0)
                         .lockTime(System.currentTimeMillis())
                         .expireTime(expireTime)
                         .status(LockStatus.LOCKED.getCode())

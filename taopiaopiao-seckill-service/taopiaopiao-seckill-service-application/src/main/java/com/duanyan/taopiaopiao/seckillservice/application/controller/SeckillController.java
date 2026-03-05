@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Tag(name = "选座/秒杀", description = "座位锁定与购买接口")
 @RestController
-@RequestMapping("/api/seckill")
+@RequestMapping("/seckill")
 @RequiredArgsConstructor
 public class SeckillController {
 

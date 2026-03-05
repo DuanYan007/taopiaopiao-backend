@@ -4,8 +4,10 @@ import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
 import com.duanyan.taopiaopiao.orderservice.api.dto.PayOrderRequest;
-import com.duanyan.taopiaopiao.orderservice.application.client.EventClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.SeckillClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.SeatTemplateClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.SessionClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.SessionDTO;
 import com.duanyan.taopiaopiao.orderservice.application.mapper.OrderMapper;
 import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
 import com.duanyan.taopiaopiao.orderservice.domain.entity.Order;
@@ -32,20 +34,42 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
     private final SeckillClient seckillClient;
-    private final EventClient eventClient;
+    private final SessionClient sessionClient;
+    private final SeatTemplateClient seatTemplateClient;
 
     private static final int ORDER_EXPIRE_MINUTES = 15;
 
     @Override
     @Transactional
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
-        // 1. 获取演出价格
-        BigDecimal unitPrice = eventClient.getEventPrice(request.getEventId());
-        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("演出价格无效");
+        // 1. 获取场次信息（包含座位模板ID）
+        Result<SessionDTO> sessionResult = sessionClient.getSessionById(request.getSessionId());
+        if (sessionResult == null || sessionResult.getData() == null) {
+            throw new RuntimeException("场次不存在");
+        }
+        SessionDTO session = sessionResult.getData();
+
+        // 2. 通过座位模板获取价格
+        if (session.getSeatTemplateId() == null) {
+            throw new RuntimeException("场次没有关联座位模板");
         }
 
-        // 2. 锁定座位
+        Result<BigDecimal> priceResult = seatTemplateClient.getMinPrice(session.getSeatTemplateId());
+        if (priceResult == null || !priceResult.isSuccess() || priceResult.getData() == null) {
+            throw new RuntimeException("获取座位价格失败");
+        }
+        BigDecimal unitPrice = priceResult.getData();
+        if (unitPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("座位价格无效");
+        }
+
+        // 获取eventId（如果需要）
+        Long eventId = session.getEventId();
+        if (eventId == null) {
+            throw new RuntimeException("场次关联的演出信息不存在");
+        }
+
+        // 3. 锁定座位
         LockSeatRequest lockRequest = new LockSeatRequest();
         lockRequest.setSessionId(request.getSessionId());
         lockRequest.setUserId(userId);
@@ -57,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("锁座失败: " + lockResponse.getMessage());
         }
 
-        // 3. 创建订单
+        // 4. 创建订单
         String orderNo = generateOrderNo();
         BigDecimal totalAmount = unitPrice.multiply(BigDecimal.valueOf(request.getSeatIds().size()));
 
@@ -65,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderNo(orderNo)
                 .userId(userId)
                 .sessionId(request.getSessionId())
-                .eventId(request.getEventId())
+                .eventId(eventId)
                 .seatIds(String.join(",", request.getSeatIds()))
                 .seatCount(request.getSeatIds().size())
                 .unitPrice(unitPrice)

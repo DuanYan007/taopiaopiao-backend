@@ -27,4 +27,12 @@ public interface ClientSessionService {
      * @return 场次详情
      */
     SessionResponse getSessionById(Long id);
+
+    /**
+     * 获取场次座位列表
+     *
+     * @param sessionId 场次ID
+     * @return 座位列表
+     */
+    com.duanyan.taopiaopiao.sessionservice.api.dto.SessionSeatsResponse getSessionSeats(Long sessionId);
 }

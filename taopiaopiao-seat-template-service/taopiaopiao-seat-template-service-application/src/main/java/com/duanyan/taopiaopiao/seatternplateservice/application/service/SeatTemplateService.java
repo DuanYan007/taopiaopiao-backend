@@ -43,4 +43,12 @@ public interface SeatTemplateService {
      * 根据场馆ID查询模板列表
      */
     java.util.List<SeatTemplateResponse> listByVenueId(Long venueId);
+
+    /**
+     * 获取座位模板的最低价格
+     *
+     * @param templateId 模板ID
+     * @return 最低价格
+     */
+    java.math.BigDecimal getMinPrice(Long templateId);
 }

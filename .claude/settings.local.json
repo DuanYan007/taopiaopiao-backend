@@ -16,7 +16,8 @@
       "Bash(mysql:*)",
       "Bash(cmd /c \"cd /d G:\\\\project\\\\taopiaopiao-backend && mvn clean compile -pl taopiaopiao-seckill-service -am\")",
       "Bash(cmd:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,11 +8,15 @@ import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionPageResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
+import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionSeatsResponse;
+import com.duanyan.taopiaopiao.sessionservice.api.dto.SeatResponse;
 import com.duanyan.taopiaopiao.sessionservice.application.client.EventClient;
 import com.duanyan.taopiaopiao.sessionservice.application.client.dto.EventDTO;
+import com.duanyan.taopiaopiao.sessionservice.application.mapper.SeatMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.mapper.SessionMapper;
 import com.duanyan.taopiaopiao.sessionservice.application.service.ClientSessionService;
 import com.duanyan.taopiaopiao.sessionservice.domain.entity.Session;
+import com.duanyan.taopiaopiao.sessionservice.domain.entity.Seat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +41,7 @@ public class ClientSessionServiceImpl implements ClientSessionService {
     private final SessionMapper sessionMapper;
     private final EventClient eventClient;
     private final SessionServiceImpl sessionService; // 复用管理端的转换逻辑
+    private final SeatMapper seatMapper;
 
     @Override
     public SessionPageResponse getSessionPage(SessionQueryRequest request) {
@@ -111,6 +116,47 @@ public class ClientSessionServiceImpl implements ClientSessionService {
         Map<Long, EventDTO> eventMap = fetchEventsByIds(List.of(session.getEventId()));
 
         return convertToResponse(session, eventMap);
+    }
+
+    @Override
+    public SessionSeatsResponse getSessionSeats(Long sessionId) {
+        // 检查场次是否存在
+        Session session = sessionMapper.selectById(sessionId);
+        if (session == null) {
+            throw new BusinessException(404, "场次不存在");
+        }
+
+        // 查询座位列表，按 id 升序排序
+        List<Seat> seats = seatMapper.selectList(
+                new LambdaQueryWrapper<Seat>()
+                        .eq(Seat::getSessionId, sessionId)
+                        .orderByAsc(Seat::getId)
+        );
+
+        // 转换为 DTO
+        List<SeatResponse> seatResponses = seats.stream()
+                .map(this::convertToSeatResponse)
+                .collect(Collectors.toList());
+
+        return SessionSeatsResponse.builder()
+                .sessionId(sessionId)
+                .seats(seatResponses)
+                .build();
+    }
+
+    /**
+     * 转换为座位响应DTO
+     */
+    private SeatResponse convertToSeatResponse(Seat seat) {
+        return SeatResponse.builder()
+                .id(seat.getId())
+                .seatRow(seat.getSeatRow())
+                .seatColumn(seat.getSeatColumn())
+                .seatNumber(seat.getSeatNumber())
+                .area(seat.getArea())
+                .price(seat.getPrice())
+                .status(seat.getStatus())
+                .build();
     }
 
     /**

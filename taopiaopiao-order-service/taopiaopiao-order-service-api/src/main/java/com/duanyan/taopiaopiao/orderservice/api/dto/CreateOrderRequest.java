@@ -18,8 +18,7 @@ public class CreateOrderRequest {
     @Schema(description = "场次ID", required = true)
     private Long sessionId;
 
-    @NotNull(message = "演出ID不能为空")
-    @Schema(description = "演出ID", required = true)
+    @Schema(description = "演出ID（可选，不传则根据场次ID自动获取）")
     private Long eventId;
 
     @NotEmpty(message = "座位ID不能为空")

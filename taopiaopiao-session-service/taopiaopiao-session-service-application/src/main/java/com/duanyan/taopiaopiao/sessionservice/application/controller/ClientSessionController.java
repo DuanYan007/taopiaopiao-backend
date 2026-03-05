@@ -4,6 +4,7 @@ import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionPageResponse;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionQueryRequest;
 import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionResponse;
+import com.duanyan.taopiaopiao.sessionservice.api.dto.SessionSeatsResponse;
 import com.duanyan.taopiaopiao.sessionservice.application.service.ClientSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,6 +47,18 @@ public class ClientSessionController {
             @Parameter(description = "场次ID", required = true)
             @PathVariable Long id) {
         SessionResponse response = clientSessionService.getSessionById(id);
+        return Result.success(response);
+    }
+
+    /**
+     * 获取场次座位列表
+     */
+    @GetMapping("/{id}/seats")
+    @Operation(summary = "获取场次座位列表")
+    public Result<SessionSeatsResponse> getSessionSeats(
+            @Parameter(description = "场次ID", required = true)
+            @PathVariable Long id) {
+        SessionSeatsResponse response = clientSessionService.getSessionSeats(id);
         return Result.success(response);
     }
 }

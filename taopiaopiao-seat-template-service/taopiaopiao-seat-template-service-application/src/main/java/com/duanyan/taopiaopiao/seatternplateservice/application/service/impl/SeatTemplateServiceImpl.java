@@ -10,12 +10,15 @@ import com.duanyan.taopiaopiao.seatternplateservice.application.mapper.SeatTempl
 import com.duanyan.taopiaopiao.seatternplateservice.application.service.SeatTemplateService;
 import com.duanyan.taopiaopiao.seatternplateservice.domain.entity.SeatTemplate;
 import com.duanyan.taopiaopiao.seatternplateservice.domain.enums.LayoutTypeEnum;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ public class SeatTemplateServiceImpl implements SeatTemplateService {
 
     private final SeatTemplateMapper seatTemplateMapper;
     private final VenueClient venueClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public SeatTemplatePageResponse getTemplatePage(SeatTemplateQueryRequest request) {
@@ -177,6 +181,68 @@ public class SeatTemplateServiceImpl implements SeatTemplateService {
         return templates.stream()
                 .map(template -> convertToResponse(template, venueMap))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public BigDecimal getMinPrice(Long templateId) {
+        SeatTemplate template = seatTemplateMapper.selectById(templateId);
+        if (template == null) {
+            throw new BusinessException("座位模板不存在");
+        }
+
+        if (!StringUtils.hasText(template.getLayoutData())) {
+            log.warn("座位模板没有布局数据: templateId={}", templateId);
+            return BigDecimal.ZERO;
+        }
+
+        try {
+            JsonNode layoutNode = objectMapper.readTree(template.getLayoutData());
+
+            // 尝试从 ticketTypes 获取价格
+            if (layoutNode.has("ticketTypes")) {
+                JsonNode ticketTypes = layoutNode.get("ticketTypes");
+                BigDecimal minPrice = null;
+
+                for (JsonNode ticketType : ticketTypes) {
+                    if (ticketType.has("price")) {
+                        BigDecimal price = new BigDecimal(ticketType.get("price").asText());
+                        if (minPrice == null || price.compareTo(minPrice) < 0) {
+                            minPrice = price;
+                        }
+                    }
+                }
+
+                if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) {
+                    return minPrice;
+                }
+            }
+
+            // 尝试从 areas 的价格获取
+            if (layoutNode.has("areas")) {
+                JsonNode areas = layoutNode.get("areas");
+                BigDecimal minPrice = null;
+
+                for (JsonNode area : areas) {
+                    if (area.has("price")) {
+                        BigDecimal price = new BigDecimal(area.get("price").asText());
+                        if (minPrice == null || price.compareTo(minPrice) < 0) {
+                            minPrice = price;
+                        }
+                    }
+                }
+
+                if (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) > 0) {
+                    return minPrice;
+                }
+            }
+
+            log.warn("未能从布局数据中解析出价格: templateId={}", templateId);
+            return BigDecimal.ZERO;
+
+        } catch (Exception e) {
+            log.error("解析座位模板布局数据失败: templateId={}", templateId, e);
+            return BigDecimal.ZERO;
+        }
     }
 
     /**

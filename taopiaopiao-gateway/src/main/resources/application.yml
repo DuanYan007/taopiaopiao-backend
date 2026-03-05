@@ -36,7 +36,7 @@ spring:
         - id: session-service
           uri: lb://session-service
           predicates:
-            - Path=/admin/sessions/**, /client/sessions/**, /api/test/**
+            - Path=/admin/sessions/**, /client/sessions/**, /test/**
           filters:
             - StripPrefix=0
 
@@ -52,7 +52,7 @@ spring:
         - id: seckill-service
           uri: lb://seckill-service
           predicates:
-            - Path=/client/seckill/**, /api/seckill/**
+            - Path=/client/seckill/**, /seckill/**
           filters:
             - StripPrefix=0
 

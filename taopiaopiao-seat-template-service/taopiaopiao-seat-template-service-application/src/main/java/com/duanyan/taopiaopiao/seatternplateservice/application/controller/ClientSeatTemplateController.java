@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 /**
  * 座位模板客户端控制器
  *
@@ -46,5 +48,17 @@ public class ClientSeatTemplateController {
         response.setLayoutData(template.getLayoutData());
 
         return Result.success(response);
+    }
+
+    /**
+     * 获取座位模板的最低价格
+     */
+    @GetMapping("/{templateId}/min-price")
+    @Operation(summary = "获取最低价格", description = "根据模板ID获取最低票价")
+    public Result<BigDecimal> getMinPrice(
+            @Parameter(description = "模板ID", required = true)
+            @PathVariable Long templateId) {
+        BigDecimal price = seatTemplateService.getMinPrice(templateId);
+        return Result.success(price);
     }
 }
