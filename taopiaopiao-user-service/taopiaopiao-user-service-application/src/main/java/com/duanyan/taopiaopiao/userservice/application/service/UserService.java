@@ -20,27 +20,5 @@ public interface UserService {
      */
     LoginResponse login(LoginRequest request);
 
-    /**
-     * 根据ID查询用户
-     *
-     * @param id 用户ID
-     * @return 用户信息
-     */
-    UserResponse getUserById(Long id);
 
-    /**
-     * 根据用户名查询用户
-     *
-     * @param username 用户名
-     * @return 用户信息
-     */
-    UserResponse getUserByUsername(String username);
-
-    /**
-     * 验证Token
-     *
-     * @param token JWT Token
-     * @return 用户ID
-     */
-    Long validateToken(String token);
 }

@@ -73,37 +73,5 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    @Override
-    public UserResponse getUserById(Long id) {
-        AdminUser adminUser = adminUserMapper.selectById(id);
-        if (adminUser == null) {
-            throw new BusinessException(UserConstants.ErrorCode.USER_NOT_FOUND, "用户不存在");
-        }
-        return convertToResponse(adminUser);
-    }
 
-    @Override
-    public UserResponse getUserByUsername(String username) {
-        LambdaQueryWrapper<AdminUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(AdminUser::getUsername, username);
-        AdminUser adminUser = adminUserMapper.selectOne(queryWrapper);
-        if (adminUser == null) {
-            throw new BusinessException(UserConstants.ErrorCode.USER_NOT_FOUND, "用户不存在");
-        }
-        return convertToResponse(adminUser);
-    }
-
-    @Override
-    public Long validateToken(String token) {
-        return jwtUtil.getUserIdFromToken(token);
-    }
-
-    /**
-     * 转换为响应DTO
-     */
-    private UserResponse convertToResponse(AdminUser adminUser) {
-        UserResponse response = new UserResponse();
-        BeanUtils.copyProperties(adminUser, response);
-        return response;
-    }
 }
