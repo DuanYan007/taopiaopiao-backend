@@ -1,0 +1,17 @@
+package com.duanyan.taopiaopiao.orderservice.application.client;
+
+import com.duanyan.taopiaopiao.common.response.Result;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.EventDTO;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+/**
+ * 演出服务客户端
+ */
+@FeignClient(name = "event-service", path = "/client/events")
+public interface EventClient {
+
+    @GetMapping("/{id}")
+    Result<EventDTO> getEventById(@PathVariable("id") Long id);
+}

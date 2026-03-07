@@ -4,7 +4,7 @@ package com.duanyan.taopiaopiao.common.redis.constants;
  * Redis Key 常量定义
  *
  * 命名规范：
- * - 座位状态: seat:{sessionId}:{row}:{col}
+ * - 座位状态: seat:{sessionId}:{seatId}
  * - 用户锁座: user:{userId}:locks
  * - 场次座位集合: session:{sessionId}:seats
  * - 售罄标志: session:{sessionId}:soldout
@@ -17,7 +17,7 @@ public class RedisKey {
 
     /**
      * 座位状态 Key 前缀
-     * <p>完整格式: seat:{sessionId}:{row}:{col}
+     * <p>完整格式: seat:{sessionId}:{seatId}
      * <p>值类型: String，值为状态码 (0=可选, 1=已锁定, 2=已售出)
      */
     public static final String SEAT_PREFIX = "seat:";
@@ -60,17 +60,6 @@ public class RedisKey {
 
     // ========== Key 构建方法 ==========
 
-    /**
-     * 构建座位状态 Key
-     *
-     * @param sessionId 场次ID
-     * @param row       排号
-     * @param col       列号
-     * @return seat:sessionId:row:col
-     */
-    public static String seatKey(Long sessionId, int row, int col) {
-        return SEAT_PREFIX + sessionId + ":" + row + ":" + col;
-    }
 
     /**
      * 构建座位状态 Key（使用座位ID）

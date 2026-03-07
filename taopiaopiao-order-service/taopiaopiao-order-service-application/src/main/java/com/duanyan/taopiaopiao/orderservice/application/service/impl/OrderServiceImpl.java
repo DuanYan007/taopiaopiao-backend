@@ -1,18 +1,23 @@
 package com.duanyan.taopiaopiao.orderservice.application.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.duanyan.taopiaopiao.common.response.Result;
-import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
-import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
-import com.duanyan.taopiaopiao.orderservice.api.dto.SeatDetail;
+import com.duanyan.taopiaopiao.orderservice.api.dto.*;
+import com.duanyan.taopiaopiao.orderservice.application.client.EventClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.SeatTemplateClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.SeckillClient;
-import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.orderservice.application.client.SessionClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.VenueClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.EventDTO;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.SeatTemplateDTO;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.SessionDTO;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.VenueDTO;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.orderservice.application.mapper.OrderMapper;
 import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
 import com.duanyan.taopiaopiao.orderservice.domain.entity.Order;
 import com.duanyan.taopiaopiao.orderservice.domain.enums.OrderStatus;
-import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +42,11 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final SeckillClient seckillClient;
     private final SessionClient sessionClient;
+    private final EventClient eventClient;
+    private final VenueClient venueClient;
+    private final SeatTemplateClient seatTemplateClient;
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
@@ -118,10 +130,53 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderPageResponse getOrderPage(Long userId, OrderPageRequest request) {
+        // 构建查询条件
+        LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<Order>()
+                .eq(Order::getUserId, userId)
+                .orderByDesc(Order::getCreatedAt);
+
+        if (request.getStatus() != null) {
+            queryWrapper.eq(Order::getStatus, request.getStatus());
+        }
+
+        // 分页查询
+        Page<Order> page = new Page<>(request.getPage(), request.getPageSize());
+        Page<Order> orderPage = orderMapper.selectPage(page, queryWrapper);
+
+        // 转换为响应DTO
+        List<OrderPageResponse.OrderListItem> listItems = orderPage.getRecords().stream()
+                .map(this::buildOrderListItem)
+                .collect(Collectors.toList());
+
+        return OrderPageResponse.builder()
+                .list(listItems)
+                .total(orderPage.getTotal())
+                .page(request.getPage())
+                .pageSize(request.getPageSize())
+                .build();
+    }
+
+    @Override
+    public OrderResponse getOrderByNo(Long userId, String orderNo) {
+        Order order = orderMapper.selectOne(
+                new LambdaQueryWrapper<Order>()
+                        .eq(Order::getOrderNo, orderNo)
+                        .eq(Order::getUserId, userId)
+        );
+
+        if (order == null) {
+            return null;
+        }
+
+        return buildOrderResponse(order);
+    }
+
+    @Override
     @Transactional
     public Boolean cancelOrder(Long userId, String orderNo) {
         Order order = orderMapper.selectOne(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order>()
+                new LambdaQueryWrapper<Order>()
                         .eq(Order::getOrderNo, orderNo)
                         .eq(Order::getUserId, userId)
         );
@@ -144,6 +199,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 更新订单状态
         order.setStatus(OrderStatus.CANCELLED.getCode());
+        order.setCancelTime(LocalDateTime.now());
         orderMapper.updateById(order);
 
         log.info("订单取消成功: orderNo={}, userId={}", orderNo, userId);
@@ -151,25 +207,35 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse getOrderByNo(Long userId, String orderNo) {
+    @Transactional
+    public Boolean deleteOrder(Long userId, String orderNo) {
         Order order = orderMapper.selectOne(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order>()
+                new LambdaQueryWrapper<Order>()
                         .eq(Order::getOrderNo, orderNo)
                         .eq(Order::getUserId, userId)
         );
 
         if (order == null) {
-            return null;
+            throw new RuntimeException("订单不存在");
         }
 
-        return buildOrderResponse(order);
+        // 只能删除已取消或已退款的订单
+        if (!OrderStatus.CANCELLED.getCode().equals(order.getStatus())
+                && !OrderStatus.REFUNDED.getCode().equals(order.getStatus())) {
+            throw new RuntimeException("只能删除已取消或已退款的订单");
+        }
+
+        orderMapper.deleteById(order.getId());
+
+        log.info("订单删除成功: orderNo={}, userId={}", orderNo, userId);
+        return true;
     }
 
     @Override
     @Transactional
     public void cancelTimeoutOrders() {
         List<Order> timeoutOrders = orderMapper.selectList(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Order>()
+                new LambdaQueryWrapper<Order>()
                         .eq(Order::getStatus, OrderStatus.PENDING.getCode())
                         .lt(Order::getExpireTime, LocalDateTime.now())
         );
@@ -210,5 +276,79 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return response;
+    }
+
+    private OrderPageResponse.OrderListItem buildOrderListItem(Order order) {
+        OrderPageResponse.OrderListItem item = OrderPageResponse.OrderListItem.builder()
+                .orderNo(order.getOrderNo())
+                .status(order.getStatus())
+                .eventId(order.getEventId())
+                .seatCount(order.getSeatCount())
+                .unitPrice(order.getUnitPrice())
+                .totalAmount(order.getTotalAmount())
+                .build();
+
+        // 设置状态描述
+        OrderStatus orderStatus = OrderStatus.fromCode(order.getStatus());
+        if (orderStatus != null) {
+            item.setStatusDesc(orderStatus.getDesc());
+        }
+
+        // 格式化时间
+        if (order.getCreatedAt() != null) {
+            item.setCreatedAt(order.getCreatedAt().format(DATE_TIME_FORMATTER));
+        }
+        if (order.getPayTime() != null) {
+            item.setPayTime(order.getPayTime().format(DATE_TIME_FORMATTER));
+        }
+        if (order.getCancelTime() != null) {
+            item.setCancelTime(order.getCancelTime().format(DATE_TIME_FORMATTER));
+        }
+        if (order.getRefundTime() != null) {
+            item.setRefundTime(order.getRefundTime().format(DATE_TIME_FORMATTER));
+        }
+
+        // 获取场次信息
+        Result<SessionDTO> sessionResult = sessionClient.getSessionById(order.getSessionId());
+        if (sessionResult != null && sessionResult.getData() != null) {
+            SessionDTO session = sessionResult.getData();
+            if (session.getStartTime() != null) {
+                item.setStartTime(session.getStartTime().format(DATE_TIME_FORMATTER));
+            }
+        }
+
+        // 获取演出信息
+        Result<EventDTO> eventResult = eventClient.getEventById(order.getEventId());
+        if (eventResult != null && eventResult.getData() != null) {
+            EventDTO event = eventResult.getData();
+            item.setEventName(event.getName());
+            item.setEventCover(event.getCoverImage());
+        }
+
+        // 获取场馆信息（通过场次 -> 座位模板 -> 场馆）
+        Result<SessionDTO> sessionForVenue = sessionClient.getSessionById(order.getSessionId());
+        if (sessionForVenue != null && sessionForVenue.getData() != null) {
+            SessionDTO session = sessionForVenue.getData();
+            if (session.getSeatTemplateId() != null) {
+                Result<SeatTemplateDTO> templateResult = seatTemplateClient.getTemplateById(session.getSeatTemplateId());
+                if (templateResult != null && templateResult.getData() != null) {
+                    SeatTemplateDTO template = templateResult.getData();
+                    if (template.getVenueId() != null) {
+                        Result<VenueDTO> venueResult = venueClient.getVenueById(template.getVenueId());
+                        if (venueResult != null && venueResult.getData() != null) {
+                            item.setVenueName(venueResult.getData().getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        // 构建座位信息（简化版，仅显示座位数量）
+        item.setSeatInfo(order.getSeatCount() + "张座位");
+
+        // 座位详情（暂时为空，需要从订单扩展表或Redis获取详细信息）
+        item.setSeatDetails(new ArrayList<>());
+
+        return item;
     }
 }

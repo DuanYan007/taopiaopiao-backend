@@ -1,6 +1,8 @@
 package com.duanyan.taopiaopiao.orderservice.application.service;
 
 import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
+import com.duanyan.taopiaopiao.orderservice.api.dto.OrderPageRequest;
+import com.duanyan.taopiaopiao.orderservice.api.dto.OrderPageResponse;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
 
 /**
@@ -14,14 +16,24 @@ public interface OrderService {
     OrderResponse createOrder(Long userId, CreateOrderRequest request);
 
     /**
-     * 取消订单
+     * 订单分页查询
      */
-    Boolean cancelOrder(Long userId, String orderNo);
+    OrderPageResponse getOrderPage(Long userId, OrderPageRequest request);
 
     /**
      * 查询订单
      */
     OrderResponse getOrderByNo(Long userId, String orderNo);
+
+    /**
+     * 取消订单
+     */
+    Boolean cancelOrder(Long userId, String orderNo);
+
+    /**
+     * 删除订单
+     */
+    Boolean deleteOrder(Long userId, String orderNo);
 
     /**
      * 订单超时取消（定时任务调用）

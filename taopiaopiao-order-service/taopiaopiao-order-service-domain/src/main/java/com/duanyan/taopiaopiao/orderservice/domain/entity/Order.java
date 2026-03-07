@@ -58,6 +58,12 @@ public class Order {
     @Schema(description = "过期时间")
     private LocalDateTime expireTime;
 
+    @Schema(description = "取消时间")
+    private LocalDateTime cancelTime;
+
+    @Schema(description = "退款时间")
+    private LocalDateTime refundTime;
+
     @TableField(fill = FieldFill.INSERT)
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;
