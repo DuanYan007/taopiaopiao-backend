@@ -27,6 +27,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
+            <exclusions>
+                <!-- 排除 epoll native transport，使用 NIO 避免 "连接被对方重置" 问题 -->
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-transport-native-epoll</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Nacos 服务发现 -->

@@ -23,6 +23,7 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
+        ip: 127.0.0.1  # 强制使用本地IP注册
 
 # MyBatis-Plus配置
 mybatis-plus:

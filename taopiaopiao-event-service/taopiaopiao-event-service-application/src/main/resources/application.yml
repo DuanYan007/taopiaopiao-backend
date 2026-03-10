@@ -25,6 +25,7 @@ spring:
         server-addr: localhost:8848
         username: nacos
         password: nacos
+        ip: 127.0.0.1  # 强制使用本地IP注册
 
   # 文件上传配置
   servlet:

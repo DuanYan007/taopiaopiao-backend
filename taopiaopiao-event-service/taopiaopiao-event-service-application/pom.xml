@@ -35,6 +35,10 @@
             <groupId>com.duanyan</groupId>
             <artifactId>taopiaopiao-common-oss</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-common</artifactId>
+        </dependency>
 
         <!-- Spring Boot Web -->
         <dependency>
@@ -96,6 +100,22 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.duanyan</groupId>
+            <artifactId>taopiaopiao-common</artifactId>
         </dependency>
     </dependencies>
 
