@@ -14,6 +14,7 @@ import com.duanyan.taopiaopiao.orderservice.application.client.dto.SeatTemplateD
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.SessionDTO;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.VenueDTO;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
+import com.duanyan.taopiaopiao.orderservice.application.controller.dto.CreatePendingOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.application.mapper.OrderMapper;
 import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
 import com.duanyan.taopiaopiao.orderservice.domain.entity.Order;
@@ -51,44 +52,85 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
-        // 1. 获取场次信息
-        Result<SessionDTO> sessionResult = sessionClient.getSessionById(request.getSessionId());
-        if (sessionResult == null || sessionResult.getData() == null) {
-            throw new RuntimeException("场次不存在");
+        // orderNo 必填，用于支付已有订单
+        if (request.getOrderNo() == null || request.getOrderNo().isBlank()) {
+            throw new RuntimeException("订单号不能为空");
         }
-        SessionDTO session = sessionResult.getData();
+        return payExistingOrder(userId, request);
+    }
 
-        // 2. 确定eventId
+    @Override
+    @Transactional
+    public OrderResponse createPendingOrder(CreatePendingOrderRequest request) {
+        // 生成订单号
+        String orderNo = generateOrderNo();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expireTime = now.plusMinutes(15); // 15分钟过期
+
+        // 获取场次信息确定eventId
         Long eventId = request.getEventId();
         if (eventId == null) {
-            eventId = session.getEventId();
+            Result<SessionDTO> sessionResult = sessionClient.getSessionById(request.getSessionId());
+            if (sessionResult == null || sessionResult.getData() == null) {
+                throw new RuntimeException("场次不存在");
+            }
+            eventId = sessionResult.getData().getEventId();
             if (eventId == null) {
                 throw new RuntimeException("场次关联的演出信息不存在");
             }
         }
 
-        // 3. 校验请求数据
-        if (request.getSeatIds().size() != request.getSeatDetails().size()) {
-            throw new RuntimeException("座位ID列表与座位详情数量不一致");
+        // 创建待支付订单
+        Order order = Order.builder()
+                .orderNo(orderNo)
+                .userId(request.getUserId())
+                .sessionId(request.getSessionId())
+                .eventId(eventId)
+                .seatIds(String.join(",", request.getSeatIds()))
+                .seatCount(request.getSeatCount())
+                .unitPrice(request.getUnitPrice())
+                .totalAmount(request.getTotalAmount())
+                .status(OrderStatus.UNPAID.getCode())
+                .expireTime(expireTime)
+                .build();
+
+        orderMapper.insert(order);
+
+        log.info("创建待支付订单成功: orderNo={}, userId={}, amount={}, seats={}",
+                orderNo, request.getUserId(), request.getTotalAmount(), request.getSeatIds());
+
+        return buildOrderResponse(order);
+    }
+
+    /**
+     * 支付已有订单
+     */
+    private OrderResponse payExistingOrder(Long userId, CreateOrderRequest request) {
+        // 查询订单
+        Order order = orderMapper.selectOne(
+                new LambdaQueryWrapper<Order>()
+                        .eq(Order::getOrderNo, request.getOrderNo())
+                        .eq(Order::getUserId, userId)
+        );
+
+        if (order == null) {
+            throw new RuntimeException("订单不存在");
         }
 
-        // 4. 校验总金额
-        BigDecimal calculatedTotal = request.getSeatDetails().stream()
-                .map(SeatDetail::getPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (calculatedTotal.compareTo(request.getTotalAmount()) != 0) {
-            throw new RuntimeException("订单总金额与座位详情金额不一致");
+        if (!OrderStatus.UNPAID.getCode().equals(order.getStatus())) {
+            throw new RuntimeException("订单状态异常，无法支付");
         }
 
-        if (request.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("订单金额必须大于0");
+        // 检查是否过期
+        if (order.getExpireTime() != null && order.getExpireTime().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("订单已过期");
         }
 
-        // 5. 确认购买（前端已预先锁定座位）
+        // 确认购买
         ConfirmPurchaseRequest confirmRequest = new ConfirmPurchaseRequest();
-        confirmRequest.setSessionId(request.getSessionId());
+        confirmRequest.setSessionId(order.getSessionId());
         confirmRequest.setUserId(userId);
-        confirmRequest.setSeatIds(request.getSeatIds());
+        confirmRequest.setSeatIds(List.of(order.getSeatIds().split(",")));
 
         Result<Boolean> confirmResult = seckillClient.confirmPurchase(confirmRequest);
         if (confirmResult == null || !confirmResult.isSuccess() || confirmResult.getData() == null) {
@@ -96,35 +138,13 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("确认购买失败: " + message);
         }
 
-        // 6. 创建订单（状态直接为已支付）
-        String orderNo = generateOrderNo();
-        BigDecimal totalAmount = request.getTotalAmount();
+        // 更新订单状态
         LocalDateTime now = LocalDateTime.now();
+        order.setStatus(OrderStatus.PAID.getCode());
+        order.setPayTime(now);
+        orderMapper.updateById(order);
 
-        // 计算平均单价（用于记录）
-        BigDecimal unitPrice = totalAmount.divide(
-                BigDecimal.valueOf(request.getSeatIds().size()),
-                2,
-                BigDecimal.ROUND_HALF_UP);
-
-        Order order = Order.builder()
-                .orderNo(orderNo)
-                .userId(userId)
-                .sessionId(request.getSessionId())
-                .eventId(eventId)
-                .seatIds(String.join(",", request.getSeatIds()))
-                .seatCount(request.getSeatIds().size())
-                .unitPrice(unitPrice)
-                .totalAmount(totalAmount)
-                .status(OrderStatus.PAID.getCode())
-                .payTime(now)
-                .expireTime(now)  // 已支付订单的过期时间等于支付时间
-                .build();
-
-        orderMapper.insert(order);
-
-        log.info("支付成功，创建订单: orderNo={}, userId={}, amount={}, seats={}",
-                orderNo, userId, totalAmount, request.getSeatIds());
+        log.info("支付成功: orderNo={}, userId={}, amount={}", order.getOrderNo(), userId, order.getTotalAmount());
 
         return buildOrderResponse(order);
     }
@@ -185,7 +205,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("订单不存在");
         }
 
-        if (!OrderStatus.PENDING.getCode().equals(order.getStatus())) {
+        if (!OrderStatus.UNPAID.getCode().equals(order.getStatus())) {
             throw new RuntimeException("只能取消待支付订单");
         }
 
@@ -236,7 +256,7 @@ public class OrderServiceImpl implements OrderService {
     public void cancelTimeoutOrders() {
         List<Order> timeoutOrders = orderMapper.selectList(
                 new LambdaQueryWrapper<Order>()
-                        .eq(Order::getStatus, OrderStatus.PENDING.getCode())
+                        .eq(Order::getStatus, OrderStatus.UNPAID.getCode())
                         .lt(Order::getExpireTime, LocalDateTime.now())
         );
 

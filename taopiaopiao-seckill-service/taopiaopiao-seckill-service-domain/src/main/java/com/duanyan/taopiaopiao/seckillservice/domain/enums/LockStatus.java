@@ -9,9 +9,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum LockStatus {
-    LOCKED(0, "已锁定"),
-    PURCHASED(1, "已购买"),
-    RELEASED(2, "已释放");
+    RELEASED(0, "已释放"),
+    LOCKED(1, "已锁定"),
+    PAID(2, "已支付");
 
     private final Integer code;
     private final String desc;

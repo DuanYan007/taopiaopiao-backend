@@ -5,8 +5,13 @@
 local sessionId = KEYS[1]
 local userId = ARGV[1]
 local seatCount = tonumber(ARGV[2])
-local expireSeconds = tonumber(ARGV[3])
+local expireSeconds = tonumber(ARGV[3]) or 300  -- 默认300秒
 local userLockKey = "user:" .. userId .. ":locks"
+
+-- 确保 expireSeconds 有效
+if expireSeconds <= 0 then
+    expireSeconds = 300
+end
 
 -- 检查重复购票
 for i = 4, 4 + seatCount - 1 do

@@ -35,7 +35,7 @@ public class OrderController {
     }
 
     @PostMapping
-    @Operation(summary = "创建订单（支付并创建）")
+    @Operation(summary = "支付订单")
     public Result<OrderResponse> createOrder(@RequestHeader("X-User-Id") Long userId,
                                               @Valid @RequestBody CreateOrderRequest request) {
         OrderResponse response = orderService.createOrder(userId, request);

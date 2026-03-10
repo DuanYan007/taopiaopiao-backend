@@ -7,11 +7,11 @@ import lombok.Getter;
  */
 @Getter
 public enum OrderStatus {
-    PENDING(0, "待支付"),
-    PAID(1, "已支付"),
-    CANCELLED(2, "已取消"),
-    REFUNDED(3, "已退款"),
-    TIMEOUT(4, "超时取消");
+    UNPAID(1, "未支付"),
+    PAID(2, "已支付"),
+    CANCELLED(3, "已取消"),
+    REFUNDED(4, "已退款"),
+    TIMEOUT(5, "超时取消");
 
     private final Integer code;
     private final String desc;

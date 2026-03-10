@@ -1,0 +1,54 @@
+package com.duanyan.taopiaopiao.seckillservice.application.client.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * 创建订单DTO（秒杀服务调用订单服务）
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateOrderDTO {
+
+    /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
+     * 场次ID
+     */
+    private Long sessionId;
+
+    /**
+     * 演出ID
+     */
+    private Long eventId;
+
+    /**
+     * 座位ID列表
+     */
+    private List<String> seatIds;
+
+    /**
+     * 座位数量
+     */
+    private Integer seatCount;
+
+    /**
+     * 单价
+     */
+    private BigDecimal unitPrice;
+
+    /**
+     * 总金额
+     */
+    private BigDecimal totalAmount;
+}

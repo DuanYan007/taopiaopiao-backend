@@ -4,6 +4,7 @@ import com.duanyan.taopiaopiao.orderservice.api.dto.CreateOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderPageRequest;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderPageResponse;
 import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
+import com.duanyan.taopiaopiao.orderservice.application.controller.dto.CreatePendingOrderRequest;
 
 /**
  * 订单服务接口
@@ -11,9 +12,15 @@ import com.duanyan.taopiaopiao.orderservice.api.dto.OrderResponse;
 public interface OrderService {
 
     /**
-     * 创建订单（支付并创建）
+     * 支付订单（将未支付订单修改为已支付状态）
+     * request.orderNo 必填
      */
     OrderResponse createOrder(Long userId, CreateOrderRequest request);
+
+    /**
+     * 创建待支付订单（内部接口，供秒杀服务调用）
+     */
+    OrderResponse createPendingOrder(CreatePendingOrderRequest request);
 
     /**
      * 订单分页查询

@@ -1,0 +1,57 @@
+package com.duanyan.taopiaopiao.seckillservice.application.client.dto;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * 场次DTO
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SessionDTO {
+
+    /**
+     * 场次ID
+     */
+    private Long id;
+
+    /**
+     * 演出ID
+     */
+    private Long eventId;
+
+    /**
+     * 座位模板ID
+     */
+    private Long seatTemplateId;
+
+    /**
+     * 开始时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+
+    /**
+     * 结束时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endTime;
+
+    /**
+     * 价格
+     */
+    private BigDecimal price;
+
+    /**
+     * 场次状态
+     */
+    private String status;
+}

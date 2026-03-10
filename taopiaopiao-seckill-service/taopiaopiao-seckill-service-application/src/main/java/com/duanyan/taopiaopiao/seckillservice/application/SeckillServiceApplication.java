@@ -4,12 +4,14 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication(scanBasePackages = {
         "com.duanyan.taopiaopiao.seckillservice.application",
         "com.duanyan.taopiaopiao.common"
 })
 @EnableDiscoveryClient
+@EnableFeignClients(basePackages = "com.duanyan.taopiaopiao.seckillservice.application.client")
 @MapperScan("com.duanyan.taopiaopiao.seckillservice.application.mapper")
 public class SeckillServiceApplication {
 
