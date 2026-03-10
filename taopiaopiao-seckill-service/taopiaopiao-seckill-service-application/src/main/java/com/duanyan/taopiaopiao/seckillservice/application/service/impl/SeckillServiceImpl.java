@@ -2,7 +2,6 @@ package com.duanyan.taopiaopiao.seckillservice.application.service.impl;
 
 import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.common.redis.service.RedisService;
-import com.duanyan.taopiaopiao.seckillservice.api.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatRequest;
 import com.duanyan.taopiaopiao.seckillservice.api.dto.LockSeatResponse;
 import com.duanyan.taopiaopiao.seckillservice.application.client.OrderClient;
@@ -47,6 +46,7 @@ public class SeckillServiceImpl implements SeckillService {
         int code = redisService.lockSeats(sessionId, userId, seatIds, expireSeconds);
 
         if (code == 0) {
+            // 先插入 seat_locks 记录，orderNo 暂时为空
             for (String seatId : seatIds) {
                 SeatLock seatLock = SeatLock.builder()
                         .sessionId(sessionId)
@@ -57,7 +57,7 @@ public class SeckillServiceImpl implements SeckillService {
                         .lockTime(System.currentTimeMillis())
                         .expireTime(expireTime)
                         .status(LockStatus.LOCKED.getCode())
-                        .orderId("ORDER_" + lockId)
+                        .orderNo(null)
                         .build();
                 seatLockMapper.insert(seatLock);
             }
@@ -89,11 +89,15 @@ public class SeckillServiceImpl implements SeckillService {
                     Result<OrderDTO> orderResult = orderClient.createPendingOrder(createOrderDTO);
                     if (orderResult != null && orderResult.isSuccess() && orderResult.getData() != null) {
                         orderNo = orderResult.getData().getOrderNo();
+                        // 更新 seat_locks 的 orderNo
+                        for (String seatId : seatIds) {
+                            seatLockMapper.updateOrderNo(sessionId, userId, seatId, orderNo);
+                        }
                         log.info("创建待支付订单成功: orderNo={}, userId={}, sessionId={}", orderNo, userId, sessionId);
                     } else {
                         log.error("创建待支付订单失败: sessionId={}, userId={}", sessionId, userId);
                         // 订单创建失败，需要回滚锁座
-                        releaseSeats(sessionId, userId, seatIds);
+                        releaseSeatsInternal(sessionId, userId, seatIds);
                         return LockSeatResponse.builder()
                                 .success(false)
                                 .code(4)
@@ -103,7 +107,7 @@ public class SeckillServiceImpl implements SeckillService {
                 } else {
                     log.error("获取场次信息失败: sessionId={}", sessionId);
                     // 获取场次信息失败，需要回滚锁座
-                    releaseSeats(sessionId, userId, seatIds);
+                    releaseSeatsInternal(sessionId, userId, seatIds);
                     return LockSeatResponse.builder()
                             .success(false)
                             .code(5)
@@ -113,7 +117,7 @@ public class SeckillServiceImpl implements SeckillService {
             } catch (Exception e) {
                 log.error("调用订单服务异常: sessionId={}, userId={}", sessionId, userId, e);
                 // 调用订单服务异常，需要回滚锁座
-                releaseSeats(sessionId, userId, seatIds);
+                releaseSeatsInternal(sessionId, userId, seatIds);
                 return LockSeatResponse.builder()
                         .success(false)
                         .code(6)
@@ -146,33 +150,41 @@ public class SeckillServiceImpl implements SeckillService {
                 .build();
     }
 
-    @Override
-    @Transactional
-    public Boolean confirmPurchase(ConfirmPurchaseRequest request) {
-        boolean success = redisService.confirmPurchase(
-                request.getSessionId(), request.getUserId(), request.getSeatIds());
-
-        if (success) {
-            for (String seatId : request.getSeatIds()) {
-                seatLockMapper.updateStatus(
-                        request.getSessionId(), request.getUserId(), seatId, LockStatus.PAID.getCode());
-            }
-            log.info("确认购买成功: sessionId={}, userId={}",
-                    request.getSessionId(), request.getUserId());
-        }
-        return success;
-    }
-
-    @Override
-    @Transactional
-    public Integer releaseSeats(Long sessionId, Long userId, List<String> seatIds) {
-        int count = redisService.unlockSeats(sessionId, userId, seatIds);
-        if (count > 0) {
+    /**
+     * 内部方法：释放座位（不对外暴露）
+     */
+    private void releaseSeatsInternal(Long sessionId, Long userId, List<String> seatIds) {
+        try {
+            redisService.unlockSeats(sessionId, userId, seatIds);
             for (String seatId : seatIds) {
                 seatLockMapper.updateStatus(sessionId, userId, seatId, LockStatus.RELEASED.getCode());
             }
-            log.info("释放座位成功: sessionId={}, userId={}, count={}", sessionId, userId, count);
+            log.info("释放座位成功: sessionId={}, userId={}, count={}", sessionId, userId, seatIds.size());
+        } catch (Exception e) {
+            log.error("释放座位异常: sessionId={}, userId={}", sessionId, userId, e);
         }
+    }
+
+    /**
+     * 内部方法：标记座位已支付（供订单服务调用）
+     */
+    @Transactional
+    public Integer markSeatLocksPaid(String orderNo, Long sessionId, Long userId, List<String> seatIds) {
+        int count = 0;
+        for (String seatId : seatIds) {
+            int updated = seatLockMapper.markAsPaid(sessionId, userId, seatId, orderNo);
+            count += updated;
+        }
+        log.info("标记座位锁定已支付: orderNo={}, count={}", orderNo, count);
         return count;
+    }
+
+    /**
+     * 内部方法：释放座位（供订单服务调用，用于取消/超时）
+     */
+    @Transactional
+    public Integer releaseSeats(Long sessionId, Long userId, List<String> seatIds) {
+        releaseSeatsInternal(sessionId, userId, seatIds);
+        return seatIds.size();
     }
 }

@@ -6,14 +6,14 @@ import com.duanyan.taopiaopiao.common.response.Result;
 import com.duanyan.taopiaopiao.orderservice.api.dto.*;
 import com.duanyan.taopiaopiao.orderservice.application.client.EventClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.SeatTemplateClient;
-import com.duanyan.taopiaopiao.orderservice.application.client.SeckillClient;
+import com.duanyan.taopiaopiao.orderservice.application.client.SeckillInternalClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.SessionClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.VenueClient;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.EventDTO;
+import com.duanyan.taopiaopiao.orderservice.application.client.dto.MarkSeatsSoldRequest;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.SeatTemplateDTO;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.SessionDTO;
 import com.duanyan.taopiaopiao.orderservice.application.client.dto.VenueDTO;
-import com.duanyan.taopiaopiao.orderservice.application.client.dto.ConfirmPurchaseRequest;
 import com.duanyan.taopiaopiao.orderservice.application.controller.dto.CreatePendingOrderRequest;
 import com.duanyan.taopiaopiao.orderservice.application.mapper.OrderMapper;
 import com.duanyan.taopiaopiao.orderservice.application.service.OrderService;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper orderMapper;
-    private final SeckillClient seckillClient;
+    private final SeckillInternalClient seckillInternalClient;
     private final SessionClient sessionClient;
     private final EventClient eventClient;
     private final VenueClient venueClient;
@@ -126,19 +126,24 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("订单已过期");
         }
 
-        // 确认购买
-        ConfirmPurchaseRequest confirmRequest = new ConfirmPurchaseRequest();
-        confirmRequest.setSessionId(order.getSessionId());
-        confirmRequest.setUserId(userId);
-        confirmRequest.setSeatIds(List.of(order.getSeatIds().split(",")));
+        List<String> seatIds = List.of(order.getSeatIds().split(","));
 
-        Result<Boolean> confirmResult = seckillClient.confirmPurchase(confirmRequest);
-        if (confirmResult == null || !confirmResult.isSuccess() || confirmResult.getData() == null) {
-            String message = (confirmResult != null && confirmResult.getMsg() != null) ? confirmResult.getMsg() : "确认购买失败";
-            throw new RuntimeException("确认购买失败: " + message);
+        // 1. Redis 确认购买（状态 1 → 2）
+        // 2. 更新 seat_locks 状态为 2（已支付）
+        Result<Integer> markResult = seckillInternalClient.markSeatLocksPaid(
+                order.getOrderNo(), order.getSessionId(), userId, seatIds);
+        if (markResult == null || !markResult.isSuccess()) {
+            throw new RuntimeException("确认购买失败");
         }
 
-        // 更新订单状态
+        // 3. 更新 seats 表状态为 sold
+        MarkSeatsSoldRequest markRequest = new MarkSeatsSoldRequest();
+        markRequest.setSessionId(order.getSessionId());
+        markRequest.setSeatIds(seatIds);
+        markRequest.setOrderNo(order.getOrderNo());
+        sessionClient.markSeatsSold(markRequest);
+
+        // 4. 更新订单状态
         LocalDateTime now = LocalDateTime.now();
         order.setStatus(OrderStatus.PAID.getCode());
         order.setPayTime(now);
@@ -211,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 释放座位
         List<String> seatIds = List.of(order.getSeatIds().split(","));
-        Result<Integer> result = seckillClient.releaseSeats(order.getSessionId(), userId, seatIds);
+        Result<Integer> result = seckillInternalClient.releaseSeats(order.getSessionId(), userId, seatIds);
 
         if (result == null || !result.isSuccess()) {
             log.warn("释放座位失败: orderNo={}", orderNo);
@@ -263,7 +268,7 @@ public class OrderServiceImpl implements OrderService {
         for (Order order : timeoutOrders) {
             try {
                 List<String> seatIds = List.of(order.getSeatIds().split(","));
-                Result<Integer> result = seckillClient.releaseSeats(order.getSessionId(), order.getUserId(), seatIds);
+                Result<Integer> result = seckillInternalClient.releaseSeats(order.getSessionId(), order.getUserId(), seatIds);
 
                 if (result != null && result.isSuccess()) {
                     order.setStatus(OrderStatus.TIMEOUT.getCode());

@@ -1,6 +1,7 @@
 package com.duanyan.taopiaopiao.orderservice.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import org.apache.ibatis.type.JdbcType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("orders")
+@TableName(value = "orders", autoResultMap = true)
 @Schema(description = "订单")
 public class Order {
 
@@ -38,6 +39,7 @@ public class Order {
     private Long eventId;
 
     @Schema(description = "座位ID列表(JSON)")
+    @TableField(typeHandler = org.apache.ibatis.type.StringTypeHandler.class, jdbcType = JdbcType.VARCHAR)
     private String seatIds;
 
     @Schema(description = "座位数量")

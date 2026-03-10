@@ -36,7 +36,19 @@
       "Bash(pkill -f \"spring-boot:run\" 2>/dev/null; sleep 1; pkill -9 -f \"spring-boot:run\" 2>/dev/null; echo \"All services stopped\")",
       "Bash(sudo ss -tlnp | grep -E \"808[0-9]\" | wc -l)",
       "Bash(sudo ss -tlnp | grep -E \"808[0-9]\")",
-      "Bash(sudo kill 74664 2>/dev/null; sleep 1; sudo ss -tlnp | grep -E \"808[0-9]\" || echo \"All service ports cleared\")"
+      "Bash(sudo kill 74664 2>/dev/null; sleep 1; sudo ss -tlnp | grep -E \"808[0-9]\" || echo \"All service ports cleared\")",
+      "Bash(sudo docker exec -it mysql mysql -uroot -p7566 -e \"SHOW DATABASES;\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"SHOW DATABASES;\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"USE taopiaopiao; SHOW CREATE TABLE seat_locks\\\\G\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"USE taopiaopiao; SHOW CREATE TABLE seats\\\\G\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"USE taopiaopiao; ALTER TABLE seat_locks CHANGE COLUMN order_id order_no VARCHAR\\(64\\) COMMENT '订单号';\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"USE taopiaopiao; ALTER TABLE seat_locks MODIFY COLUMN status TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 0-已释放, 1-已锁定, 2-已支付';\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"USE taopiaopiao; ALTER TABLE seats ADD COLUMN order_no VARCHAR\\(64\\) COMMENT '订单号' AFTER order_id;\")",
+      "Bash(sudo docker exec -it mysql mysql -uroot -proot -e \"DESCRIBE taopiaopiao.seats;\" 2>/dev/null)",
+      "Bash(sudo docker exec mysql mysql -uroot -proot -e \"DESCRIBE taopiaopiao.seats;\" 2>&1)",
+      "Bash(sudo docker exec mysql mysql -utaopiaopiao -pTaopiaopiao@2025 -e \"DESCRIBE taopiaopiao.orders;\" 2>&1 | grep -v \"Warning\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"DESCRIBE taopiaopiao.orders;\" 2>&1 | grep -v \"Warning\")",
+      "Bash(sudo docker exec mysql mysql -uroot -p7566 -e \"SELECT id, order_no, user_id, session_id, event_id, seat_ids FROM taopiaopiao.orders WHERE order_no='ORD1773151405835F74992E8';\" 2>&1 | grep -v \"Warning\")"
     ],
     "deny": [],
     "ask": []

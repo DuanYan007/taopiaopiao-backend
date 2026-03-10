@@ -31,7 +31,7 @@ public class SeatLock {
     private Long lockTime;
     private Long expireTime;
     private Integer status;
-    private String orderId;
+    private String orderNo;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

@@ -229,6 +229,18 @@ public class SessionServiceImpl implements SessionService {
         sessionMapper.updateById(session);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer markSeatsSold(Long sessionId, java.util.List<String> seatIds, String orderNo) {
+        log.info("标记座位已售出, sessionId: {}, seatIds: {}, orderNo: {}", sessionId, seatIds, orderNo);
+
+        // 调用 Mapper 更新座位状态
+        int updated = seatMapper.markSeatsSold(sessionId, seatIds, orderNo);
+        log.info("成功更新{}条座位记录为已售出", updated);
+
+        return updated;
+    }
+
     /**
      * 转换为响应DTO（带关联信息）
      */

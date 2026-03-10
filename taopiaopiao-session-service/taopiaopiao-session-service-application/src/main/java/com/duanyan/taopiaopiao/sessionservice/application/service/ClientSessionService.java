@@ -35,4 +35,14 @@ public interface ClientSessionService {
      * @return 座位列表
      */
     com.duanyan.taopiaopiao.sessionservice.api.dto.SessionSeatsResponse getSessionSeats(Long sessionId);
+
+    /**
+     * 标记座位已售出（内部接口，供订单服务调用）
+     *
+     * @param sessionId 场次ID
+     * @param seatIds 座位ID列表
+     * @param orderNo 订单号
+     * @return 更新数量
+     */
+    Integer markSeatsSold(Long sessionId, java.util.List<String> seatIds, String orderNo);
 }

@@ -22,7 +22,7 @@ public class LockSeatRequest {
     @NotNull(message = "用户ID不能为空")
     private Long userId;
 
-    @Schema(description = "座位ID列表，格式: [\"1:1\",\"1:2\"]", required = true)
+    @Schema(description = "座位ID列表（seats表的id字段）", required = true)
     @NotEmpty(message = "座位ID不能为空")
     private List<String> seatIds;
 

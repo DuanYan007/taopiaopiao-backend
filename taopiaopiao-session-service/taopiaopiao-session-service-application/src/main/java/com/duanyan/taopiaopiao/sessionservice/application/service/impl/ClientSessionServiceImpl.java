@@ -20,6 +20,7 @@ import com.duanyan.taopiaopiao.sessionservice.domain.entity.Seat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -142,6 +143,18 @@ public class ClientSessionServiceImpl implements ClientSessionService {
                 .sessionId(sessionId)
                 .seats(seatResponses)
                 .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer markSeatsSold(Long sessionId, java.util.List<String> seatIds, String orderNo) {
+        log.info("标记座位已售出, sessionId: {}, seatIds: {}, orderNo: {}", sessionId, seatIds, orderNo);
+
+        // 调用 Mapper 更新座位状态
+        int updated = seatMapper.markSeatsSold(sessionId, seatIds, orderNo);
+        log.info("成功更新{}条座位记录为已售出", updated);
+
+        return updated;
     }
 
     /**

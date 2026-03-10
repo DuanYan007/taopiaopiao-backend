@@ -43,4 +43,9 @@ public interface SessionService {
      * 更新场次状态
      */
     void updateSessionStatus(Long id, String status);
+
+    /**
+     * 标记座位已售出（内部接口，供订单服务调用）
+     */
+    Integer markSeatsSold(Long sessionId, java.util.List<String> seatIds, String orderNo);
 }

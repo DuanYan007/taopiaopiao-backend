@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.duanyan.taopiaopiao.sessionservice.application.mapper.SeatMapper">
+
+    <update id="markSeatsSold">
+        UPDATE seats
+        SET status = 'sold',
+            order_no = #{orderNo},
+            updated_at = NOW()
+        WHERE session_id = #{sessionId}
+          AND id IN
+        <foreach collection="seatIds" item="seatId" separator="," open="(" close=")">
+            #{seatId}
+        </foreach>
+    </update>
+
+</mapper>

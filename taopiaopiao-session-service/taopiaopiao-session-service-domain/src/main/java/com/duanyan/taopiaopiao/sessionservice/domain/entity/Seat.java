@@ -83,6 +83,11 @@ public class Seat {
     private Long orderId;
 
     /**
+     * 订单号
+     */
+    private String orderNo;
+
+    /**
      * 扩展字段(JSON)
      */
     private String metadata;
