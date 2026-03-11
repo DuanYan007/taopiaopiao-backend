@@ -65,8 +65,8 @@ public class RedisKey {
      * 构建座位状态 Key（使用座位ID）
      *
      * @param sessionId 场次ID
-     * @param seatId    座位ID (格式: row:col)
-     * @return seat:sessionId:row:col
+     * @param seatId    座位ID
+     * @return seat:sessionId:seatIds
      */
     public static String seatKey(Long sessionId, String seatId) {
         return SEAT_PREFIX + sessionId + ":" + seatId;
